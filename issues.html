@@ -3,7 +3,12 @@
 <head>
 <meta charset="utf-8">
 <title>WCAG-2.0 Browser</title>
+
 <link rel="stylesheet" href="css/superfish.css" media="screen">
+<style>
+#create-issue .issue {display: block;}
+</style>
+
 <script src="jquery.min.js"></script>
 <script src="hoverIntent.js"></script>
 <script src="superfish.min.js"></script>
@@ -48,18 +53,71 @@
 </div>
 </div><!-- #wcag-browser -->
 
+<div id="create-issue" role="region" aria-label="Create issue">
+</div>
+
+<div id="issues" role="region" aria-label="Issues">
+<table>
+</table>
+</div>
+
 </main>
 
 <div id="debug" aria-live="polite">
 </div>
 
-<script type=id="issue-template" "text/html" >
+<script id="issue-display" class="template" type="text/html">
 <span class="issue number "></span>
 <span class="issue short-description "></span>
 <span class="issue guideline "></span>
 <span class="issue priority "></span>
-<span class="issue long-description"></span>
-<span class="issue code-example"></span>
+<span class="issue full-description"></span>
+<span class="issue code-example"><code><pre></pre></code></span>
+</script>
+
+<script id="issue-create" class="template" type="text/html">
+<span class="issue" data-name="number">
+</span><span class="issue">
+<label>Short description: <input type="text" data-name=" short-description"></label>
+</span><span class="issue">
+<label>Guideline: <input type="text" data-name="guideline"></label>
+</span><span class="issue">
+<label>Priority: <input type="range" data-name="priority" min="1" max="5"></label>
+</span><span class="issue">
+<label>Full description <textarea data-name="long-description"></textarea></label>
+</span><span class="issue">
+<label>Code example: <textarea data-name="code-example"></textarea></label>
+</span>
+
+<button class="create">Create issue</button>
+</script>
+
+<script>
+displayForm ();
+
+$("#create-issue").on ("click", ".create", function (e) {
+getIssueData ( $(".issue input, .issue textarea", "#create-issue") );
+return false;
+}); // create
+
+function displayForm () {
+var html = $("#issue-create.template").html();
+$("#create-issue").append (html);
+} // displayForm
+
+function getIssueData ($issue) {
+var issueData = {};
+alert (`getIssueData: ${$issue.length}`);
+
+$issue.each (function () {
+var name = $(this).attr ("data-name");
+issueData[name] = $(this).val();
+}); // each
+
+alert (JSON.stringify(issueData));
+return issueData;
+} // getIssueData
+
 </script>
 
 </body>
