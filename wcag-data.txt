@@ -1,0 +1,77 @@
+0 Perceivable
+1 Text Alternatives
+2 Non-text Content
+1 Time-based Media
+2 Audio-only and Video-only (Prerecorded)
+2 Captions (Prerecorded)
+2 Audio Description or Media Alternative (Prerecorded)
+2 Captions (Live)
+2 Audio Description (Prerecorded)
+2 Sign Language (Prerecorded)
+2 Extended Audio Description (Prerecorded)
+2 Media Alternative (Prerecorded)
+2 Audio-only (Live)
+1 Adaptable
+2 Info and Relationships
+2 Meaningful Sequence
+2 Sensory Characteristics
+1 Distinguishable
+2 Use of Color
+2 Audio Control
+2 Contrast (Minimum)
+2 Resize text
+2 Images of Text
+2 Contrast (Enhanced)
+2 Low or No Background Audio
+2 Visual Presentation
+2 Images of Text (No Exception)
+0 Operable
+1 Keyboard Accessible
+2 Keyboard
+2 No Keyboard Trap
+2 Keyboard (No Exception)
+1 Enough Time
+2 Timing Adjustable
+2 Pause, Stop, Hide
+2 No Timing
+2 Interruptions
+2 Re-authenticating
+1 Seizures
+2 Three Flashes or Below Threshold
+2 Three Flashes
+1 Navigable
+2 Bypass Blocks
+2 Page Titled
+2 Focus Order
+2 Link Purpose (In Context)
+2 Multiple Ways
+2 Headings and Labels
+2 Focus Visible
+2 Location
+2 Link Purpose (Link Only)
+2 Section Headings
+0 Understandable
+1 Readable
+2 Language of Page
+2 Language of Parts
+2 Unusual Words
+2 Abbreviations
+2 Reading Level
+2 Pronunciation
+1 Predictable
+2 On Focus
+2 On Input
+2 Consistent Navigation
+2 Consistent Identification
+2 Change on Request
+1 Input Assistance
+2 Error Identification
+2 Labels or Instructions
+2 Error Suggestion
+2 Error Prevention (Legal, Financial, Data)
+2 Help
+2 Error Prevention (All)
+0 Robust
+1 Compatible
+2 Parsing
+2 Name, Role, Value

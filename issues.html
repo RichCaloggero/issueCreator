@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>WCAG-2.0 Browser</title>
+<link rel="stylesheet" href="css/superfish.css" media="screen">
+<script src="jquery.min.js"></script>
+<script src="hoverIntent.js"></script>
+<script src="superfish.min.js"></script>
+
+<script src="debug.js"></script>
+<script src="import.js"></script>
+<script src="accessible-superfish.js"></script>
+<script src="wcag-browser.js"></script>
+
+</head>
+<body>
+<h1>Issues</h1>
+<nav>
+<div>
+<button id="new" accesskey="n">New Issue</button>
+<button id="load" accesskey="l">Load Issues</button>
+<button id="save" accesskey="s">Save Issues</button>
+<button id="delete" accesskey="d">Delete Issues</button>
+</div><div>
+<label>Select issue: <select id="issues"></select></label>
+</div>
+</nav>
+
+<main>
+
+<div id="wcag-browser">
+<h2>WCAG-2.0 Browser</h2>
+<nav>
+<label>Verbosity:
+<select id="verbosity">
+<option value="0">Principles</option>
+<option value="1">Guidelines</option>
+<option selected value="2">Criteria</option>
+<option value="3">Off</option>
+</select></label>
+
+<div id="menu-container">
+</div>
+</nav>
+
+<div id="text" aria-live="polite">
+</div>
+</div><!-- #wcag-browser -->
+
+</main>
+
+<div id="debug" aria-live="polite">
+</div>
+
+<script type=id="issue-template" "text/html" >
+<span class="issue number "></span>
+<span class="issue short-description "></span>
+<span class="issue guideline "></span>
+<span class="issue priority "></span>
+<span class="issue long-description"></span>
+<span class="issue code-example"></span>
+</script>
+
+</body>
+</html>

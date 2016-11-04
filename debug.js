@@ -1,0 +1,4 @@
+function debug (text) {return;var text = $.map ($.makeArray (arguments), function (arg) {	var type = typeof(arg);	if (type === "array" || type == "object") return JSON.stringify(arg) + "\n";	else return arg;}).join (" ");
+if ($("#debug").length > 0) {if (! text) {$("#debug").html ("");} else {	$("#debug").append (document.createTextNode(text), "<br>\n");} // if
+} else {console.error (text);} // if} // debug
+function debugNode ($node, label) {//return;var info = "(invalid)";if (isValidNode($node)) info = $node[0].nodeName + $node.find("a:first").text();if (label) debug (label, info);return info;function isValidNode ($node) {return ($node && $node.length == 1);} // isValidNode} // debugNode
