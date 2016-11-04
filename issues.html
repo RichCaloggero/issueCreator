@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
-<title>WCAG-2.0 Browser</title>
+<title>Accessibility Issue Creator</title>
 
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 <style>
@@ -67,12 +67,12 @@
 </div>
 
 <script id="issue-display" class="template" type="text/html">
-<span class="issue number "></span>
-<span class="issue short-description "></span>
-<span class="issue guideline "></span>
-<span class="issue priority "></span>
-<span class="issue full-description"></span>
-<span class="issue code-example"><code><pre></pre></code></span>
+<td data-name="number"></td>
+<td data-name="short-description"></td>
+<td data-name="guideline "></td>
+<td data-name="priority "></td>
+<td data-name="full-description"></td>
+<td data-name="code-example"><code><pre></pre></code></td>
 </script>
 
 <script id="issue-create" class="template" type="text/html">
@@ -93,12 +93,30 @@
 </script>
 
 <script>
+var issueNumber = 0;
 displayForm ();
 
 $("#create-issue").on ("click", ".create", function (e) {
-getIssueData ( $(".issue input, .issue textarea", "#create-issue") );
+issueNumber += 1;
+createIssue (issueNumber, getIssueData ( $("[data-name]", "#create-issue") ))
+.appendTo ($("#issues > table"));
+
 return false;
 }); // create
+
+function createIssue (number, data) {
+var $issue = $('<tr class="issue"></tr>');
+
+$(`<td data-name="number">${number}</td>`)
+.appendTo ($issue);
+
+for (var name in data) {
+$(`<td data-name="${name}">${data[name]}</td>`)
+.appendTo ($issue);
+} // for
+
+return $issue;
+} // createIssue
 
 function displayForm () {
 var html = $("#issue-create.template").html();
