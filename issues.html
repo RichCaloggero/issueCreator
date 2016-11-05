@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 <style>
 #issue-create span {display: block;}
+#download-controls {display: none;}
 </style>
 
 <script src="jquery.min.js"></script>
@@ -21,14 +22,22 @@
 </head>
 <body>
 <h1>Issues</h1>
+<div id="status" role="region" aria-label="Status" aria-live="polite">
+</div>
+
 <nav>
 <div>
 <button id="new" accesskey="n">New Issue</button>
 <button id="load" accesskey="l">Load Issues</button>
 <button id="save" accesskey="s">Save Issues</button>
-<button id="delete" accesskey="d">Delete Issues</button>
+<span id="download-controls">
+<label>Filename: <input type="text" class="fileName" value="issues.dat"></label>
+<a class="download" href="#">Download</a>
+<button class="cancel">Cancel</button>
+</span>
 </div><div>
 <label>Select issue: <select id="issues"></select></label>
+<button id="delete" accesskey="d">Delete</button>
 </div>
 </nav>
 
@@ -92,6 +101,8 @@
 <script>
 var issueNumber = 0;
 
+statusMessage ("Ready.");
+
 $("#issue-create").on ("submit", function (e) {
 issueNumber += 1;
 
@@ -102,18 +113,34 @@ return false;
 }); // create
 
 $("#save").on ("click", function (e) {
-var $save = $(this);
-var link = createDownloadLink ("issues", issueListData());
-$(this).after (link);
-$(link).focus().on ("click", function (e) {
-$(link).remove ();
-
-$save.focus ();
-return true;
-});
+var url = createBlob (issueListData());
+$("#download-controls .download").attr ("href", url);
+$("#download-controls").show ()
+.find (".fileName").focus ();
 
 return false;
 }); // save
+
+$("#download-controls")
+.on ("focusout", ".fileName", function (e) {
+$("#download-controls .download").attr ("download", $(e.target).val());
+return true;
+}).on ("click", ".download", function (e) {
+var fileName = $(e.target).attr ("download");
+
+if (fileName) {
+$("#download-controls").hide ();
+return true;
+
+} else {
+statusMessage ("no file name given");
+$("#download-controls .fileName").focus ();
+return false;
+} // if
+}).on ("click", ".cancel", function (e) {
+$("#save").focus ();
+$("#download-controls").hide ();
+}); // click .cancel
 
 function issueListData () {
 var issues = [];
@@ -133,7 +160,6 @@ issues.push (issue);
 
 return issues;
 } // issueListData
-
 
 function createIssue (number, data) {
 var $issue = $('<tr class="issue"></tr>');
@@ -160,15 +186,14 @@ return issueData;
 } // getIssueData
 
 
-function createDownloadLink (name, object) {
+function createBlob (object) {
 var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
-var url = URL.createObjectURL(data);
-var link = document.createElement("a");
-link.innerHTML = "Download data";
-link.href = url;
-link.download = name + ".dat";
-return link;
-} // createDownloadLink
+return URL.createObjectURL(data);
+} // createBlob
+
+function statusMessage (message) {
+$("#status").html("").text(message);
+} // statusMessage
 
 </script>
 
