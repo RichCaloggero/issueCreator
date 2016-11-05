@@ -6,7 +6,7 @@
 
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 <style>
-#create-issue .issue {display: block;}
+#issue-create span {display: block;}
 </style>
 
 <script src="jquery.min.js"></script>
@@ -53,31 +53,13 @@
 </div>
 </div><!-- #wcag-browser -->
 
-<div id="create-issue" role="region" aria-label="Create issue">
-</div>
+<hr>
 
-<div id="issues" role="region" aria-label="Issues">
-<table>
-</table>
-</div>
+<div id="issue-create" role="region">
+<h2>Create Issue</h2>
 
-</main>
-
-<div id="debug" aria-live="polite">
-</div>
-
-<script id="issue-display" class="template" type="text/html">
-<td data-name="number"></td>
-<td data-name="short-description"></td>
-<td data-name="guideline "></td>
-<td data-name="priority "></td>
-<td data-name="full-description"></td>
-<td data-name="code-example"><code><pre></pre></code></td>
-</script>
-
-<script id="issue-create" class="template" type="text/html">
-<span class="issue" data-name="number">
-</span><span class="issue">
+<form>
+<span class="issue">
 <label>Short description: <input type="text" data-name=" short-description"></label>
 </span><span class="issue">
 <label>Guideline: <input type="text" data-name="guideline"></label>
@@ -89,16 +71,31 @@
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </span>
 
-<button class="create">Create issue</button>
-</script>
+<input class="create" type="submit" value="Submit">
+</form>
+</div>
+
+<hr>
+
+<div id="issues" role="region">
+<h2>Issues</h2>
+<table>
+</table>
+</div>
+
+</main>
+
+<div id="debug" aria-live="polite">
+</div>
+
 
 <script>
 var issueNumber = 0;
-displayForm ();
 
-$("#create-issue").on ("click", ".create", function (e) {
+$("#issue-create").on ("submit", function (e) {
 issueNumber += 1;
-createIssue (issueNumber, getIssueData ( $("[data-name]", "#create-issue") ))
+
+createIssue (issueNumber, getIssueData ( $("[data-name]", "#issue-create") ))
 .appendTo ($("#issues > table"));
 
 return false;
@@ -107,30 +104,21 @@ return false;
 function createIssue (number, data) {
 var $issue = $('<tr class="issue"></tr>');
 
-$(`<td data-name="number">${number}</td>`)
+Array.concat ([{Name: "issueNumber", value: issueNumber}], data).forEach (function (data) {
+$(`<td data-name="${data.name}">${data.value}</td>`)
 .appendTo ($issue);
-
-for (var name in data) {
-$(`<td data-name="${name}">${data[name]}</td>`)
-.appendTo ($issue);
-} // for
+}); // forEach
 
 return $issue;
 } // createIssue
-
-function displayForm () {
-var html = $("#issue-create.template").html();
-$("#create-issue").append (html);
-} // displayForm
-
 function getIssueData ($issue) {
-var issueData = {};
+var issueData = [];
 alert (`getIssueData: ${$issue.length}`);
 
-$issue.each (function () {
-var name = $(this).attr ("data-name");
-issueData[name] = $(this).val();
-}); // each
+issueData = $issue.get().map (function (element) {
+var name = $(element).attr ("data-name");
+return {name: name, value: $(element).val()};
+}); // map
 
 alert (JSON.stringify(issueData));
 return issueData;
