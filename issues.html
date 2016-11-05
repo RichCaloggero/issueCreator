@@ -101,10 +101,44 @@ createIssue (issueNumber, getIssueData ( $("[data-name]", "#issue-create") ))
 return false;
 }); // create
 
+$("#save").on ("click", function (e) {
+var link = createDownloadLink ("issues", issueListData());
+$(this).after (link);
+link.focus();
+
+$(link).once ("click", function (e) {
+$(link).remove ();
+return true;
+});
+
+return false;
+}); // save
+
+function issueListData () {
+var issues = [];
+
+$("#issues .issue").each (function () {
+var issue = [];
+
+$("[data-name]", this).each (function () {
+issue.push ({
+name: $(this).attr("data-name"),
+value: $(this).text()
+});
+}); // each field
+
+issues.push (issue);
+}); // each issue
+
+return issues;
+} // issueListData
+
+
 function createIssue (number, data) {
 var $issue = $('<tr class="issue"></tr>');
 
-Array.concat ([{Name: "issueNumber", value: issueNumber}], data).forEach (function (data) {
+data.unshift ({name: "issueNumber", value: issueNumber});
+data.forEach (function (data) {
 $(`<td data-name="${data.name}">${data.value}</td>`)
 .appendTo ($issue);
 }); // forEach
@@ -123,6 +157,17 @@ return {name: name, value: $(element).val()};
 alert (JSON.stringify(issueData));
 return issueData;
 } // getIssueData
+
+
+function createDownloadLink (name, object) {
+var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
+var url = URL.createObjectURL(data);
+var link = document.createElement("a");
+link.innerHTML = "Download data";
+link.href = url;
+link.download = name + ".dat";
+return link;
+} // createDownloadLink
 
 </script>
 
