@@ -102,12 +102,13 @@ return false;
 }); // create
 
 $("#save").on ("click", function (e) {
+var $save = $(this);
 var link = createDownloadLink ("issues", issueListData());
 $(this).after (link);
-link.focus();
-
-$(link).once ("click", function (e) {
+$(link).focus().on ("click", function (e) {
 $(link).remove ();
+
+$save.focus ();
 return true;
 });
 
