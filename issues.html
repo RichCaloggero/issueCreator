@@ -69,7 +69,7 @@
 
 <form>
 <span class="issue">
-<label>Short description: <input type="text" data-name=" short-description"></label>
+<label>Title: <input type="text" data-name=" title"></label>
 </span><span class="issue">
 <label>Guideline: <input type="text" data-name="guideline"></label>
 </span><span class="issue">
@@ -88,8 +88,6 @@
 
 <div id="issues" role="region">
 <h2>Issues</h2>
-<table>
-</table>
 </div>
 
 </main>
@@ -101,6 +99,9 @@
 <script>
 var issueNumber = 0;
 
+var $headers = $('<tr></tr>')
+.append (createTableHeaders ( $("#issue-create [data-name]")));
+alert ($headers.html());
 
 $("#issue-create").on ("submit", function (e) {
 issueNumber += 1;
@@ -161,6 +162,21 @@ issues.push (issue);
 
 return issues;
 } // issueListData
+
+function createTableHeaders ($fields) {
+alert (`fields: ${$fields.length}`);
+var $headers = $fields.map (function (i, element) {
+var name = $(element).attr ("data-name");
+return $(`<th>${name}</th>`);
+});
+
+$headers = $('<th>Number</th>').add ($headers);
+alert (`headers: ${$headers.length}`);
+$headers = $('<tr></tr>').append ($headers);
+statusMessage(`$headers: ${$headers.html()}`);
+return $headers;
+} // createTableHeaders
+
 
 function createIssue (data) {
 var $issue = $();

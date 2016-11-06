@@ -74,7 +74,7 @@ debug (`loc: ${loc}`);
 text = extractText($guidelines, selectors, loc);
 debug (`text: ${text}`);
 display (text);
-statusMessage ("Ready.");
+//statusMessage ("Ready.");
 
 $tree.on ("selectNode", function (e) {
 var loc, text;
