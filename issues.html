@@ -101,12 +101,13 @@
 <script>
 var issueNumber = 0;
 
-statusMessage ("Ready.");
 
 $("#issue-create").on ("submit", function (e) {
 issueNumber += 1;
 
-createIssue (issueNumber, getIssueData ( $("[data-name]", "#issue-create") ))
+$(`<td>${issueNumber}</td>`)
+.add (createIssue (getIssueData ( $("[data-name]", "#issue-create") )))
+.appendTo ('<tr class="issue"></tr>')
 .appendTo ($("#issues > table"));
 
 return false;
@@ -161,15 +162,14 @@ issues.push (issue);
 return issues;
 } // issueListData
 
-function createIssue (number, data) {
-var $issue = $('<tr class="issue"></tr>');
+function createIssue (data) {
+var $issue = $();
 
-data.unshift ({name: "issueNumber", value: issueNumber});
 data.forEach (function (data) {
-$(`<td data-name="${data.name}">${data.value}</td>`)
-.appendTo ($issue);
+$issue = $issue.add ( $(`<td data-name="${data.name}">${data.value}</td>`) );
 }); // forEach
 
+alert ($issue.length);
 return $issue;
 } // createIssue
 function getIssueData ($issue) {
