@@ -74,7 +74,6 @@ loc = location($tree, getSelectedNode($tree));
 text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
 display (text);
-statusMessage ("Ready.");
 
 $tree.on ("selectNode", function (e) {
 var loc, text;
@@ -142,7 +141,6 @@ function getVerbosity () {
 return $("#verbosity").val();
 } // getVerbosity
 
-statusMessage ("Loading...");
 }); // ready
 
 

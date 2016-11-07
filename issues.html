@@ -27,17 +27,18 @@
 
 <nav>
 <div>
-<button id="new" accesskey="n">New Issue</button>
+<label> Project name: <input type="text" id="projectName"></label>
 <button id="load" accesskey="l">Load Issues</button>
 <button id="save" accesskey="s">Save Issues</button>
 <span id="download-controls">
-<label>Filename: <input type="text" class="fileName" value="issues.dat"></label>
+<label>Filename: <input type="text" class="fileName"></label>
 <a class="download" href="#">Download</a>
 <button class="cancel">Cancel</button>
 </span>
 </div><div>
 <label>Select issue: <select id="issueSelector"></select></label>
 <button id="delete" accesskey="d">Delete</button>
+<button id="clear" accesskey="c">Clear (delete all)</button>
 </div>
 </nav>
 
@@ -69,7 +70,7 @@
 
 <form>
 <span class="issue">
-<label>Title: <input type="text" data-name=" title"></label>
+<label>Title: <input type="text" data-name="title"></label>
 </span><span class="issue">
 <label>Guideline: <input type="text" data-name="guideline"></label>
 </span><span class="issue">
@@ -105,9 +106,25 @@ var issueNumber = 0;
 var fieldNames = getFieldNames ($('#issue-create [data-name]'));
 var issues = [];
 
+statusMessage ("Ready.");
+if (localStorage) {
+if (localStorage.issues) {
+issues = JSON.parse(localStorage.issues)
+generateIssueDisplay (issues);
+generateIssueSelector (issues);
+statusMessage (`${issues.length} issues loaded.`);
+} // if
+
+} else {
+alert ("Local storage not available");
+} // if
+
+
 $("#issue-create").on ("submit", function (e) {
 issues.push (getIssueData ($("#issue-create [data-name]")));
+if (localStorage) localStorage.issues = JSON.stringify(issues);
 generateIssueDisplay (issues);
+generateIssueSelector (issues);
 statusMessage (`${issues.length} issues.`);
 
 return false;
@@ -119,20 +136,55 @@ statusMessage ("Display reset.");
 return true;
 });
 
-$("#save").on ("click", function (e) {
-var url = createBlob (issueListData());
-$("#download-controls .download").attr ("href", url);
-$("#download-controls").show ()
-.find (".fileName").focus ();
+$("#issueSelector").on ("change", function () {
+var issue = issues[Number($(this).val())];
+setIssueData ($("#issue-create [data-name]"), issue);
+return true;
+});
 
+$("#clear").on ("click", function () {
+if (localStorage) localStorage.issues = [];
+issues = [];
+generateIssueDisplay (issues);
+statusMessage ("All issues deleted!");
+return false;
+});
+
+$("#load").on ("click", function (e) {
+
+}); // load
+
+$("#save").on ("click", function (e) {
+var url = createBlob (issues);
+var projectName = $("#projectName").val ();
+if (projectName) {
+$("#download-controls .download").attr ({
+"href": url,
+"download": projectName + ".json"
+});
+
+$("#download-controls").show ()
+.find (".download")
+.focus ();
+
+//$("#download-controls").show ()
+//.find (".fileName")
+//.val (projectName + ".json")
+//.focus ();
+
+} else {
+statusMessage ("Need a project name.");
+$("#projectName").focus ();
+} // if
 return false;
 }); // save
 
 $("#download-controls")
-.on ("focusout", ".fileName", function (e) {
+/*.on ("focusout", ".fileName", function (e) {
 $("#download-controls .download").attr ("download", $(e.target).val());
 return true;
-}).on ("click", ".download", function (e) {
+})
+*/.on ("click", ".download", function (e) {
 var fileName = $(e.target).attr ("download");
 
 if (fileName) {
@@ -140,7 +192,7 @@ $("#download-controls").hide ();
 return true;
 
 } else {
-statusMessage ("no file name given");
+statusMessage ("No file name given.");
 $("#download-controls .fileName").focus ();
 return false;
 } // if
@@ -222,12 +274,43 @@ var issueData = [];
 
 issueData = $issue.get().map (function (element) {
 var name = $(element).data ("name");
-return {name: name, value: $(element).val()};
+return {name: name.trim(), value: $(element).val().trim()};
 }); // map
 
 return issueData;
 } // getIssueData
 
+function setIssueData ($issue, data) {
+$issue.each (function (i, element) {
+$(this).val (data[i].value);
+}); // each
+} // setIssueData
+
+function generateIssueSelector (issues) {
+$("#issueSelector").empty()
+.append (createIssueSelector (issues));
+} // generateIssueSelector
+
+function createIssueSelector (issues) {
+var $options = $();
+getIssueField ("title", issues).forEach ((text, index) => $options = $options.add (`<option value=${index}>${text}</option>`))
+return $options;
+} // createIssueSelector
+
+function getIssueField (name, issues) {
+var names = issues.map (function (issue) {
+var value = issue.find (function (x) {
+//debug ("x: ", x);
+return x.name === name;
+}); // find
+
+//debug ("value: ", name, value);
+return (value)? value.value : "";
+});
+
+//debug ("fields: ", names);
+return names;
+} // getIssueField
 
 function createBlob (object) {
 var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
@@ -235,7 +318,7 @@ return URL.createObjectURL(data);
 } // createBlob
 
 function getFieldNames ($fields) {
-return $fields.map ((i, element) => $(element).data ("name")).get();
+return $fields.map ((i, element) => $(element).data ("name").trim()).get();
 } // getFieldNames
 
 function statusMessage (message) {
