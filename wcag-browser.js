@@ -1,5 +1,5 @@
 $(document).ready(function(){
-debug ("--start--");
+//debug ("--start--");
 
 // import data
 var import_treeData = jQuery.ajax({url: "wcag-data.txt", dataType: "text"})
@@ -15,7 +15,7 @@ html = tree2html (tree);
 //debug ("html: ", html);
 
 $("#menu-container").html (html);
-debug ("html added");
+//debug ("html added");
 
 $("#menu-container > ul")
 .attr ("id", "menu")
@@ -52,7 +52,7 @@ var import_wcagData = $.get ("http://www.w3.org/TR/WCAG20/")
 alert (error.message);
 }).done (function (data) {
 
-debug ("Guidelines loaded");
+//debug ("Guidelines loaded");
 
 
 }); // ajax
@@ -70,20 +70,20 @@ var $tree = $("#menu");
 var loc, text;
 
 loc = location($tree, getSelectedNode($tree));
-debug (`loc: ${loc}`);
+//debug (`loc: ${loc}`);
 text = extractText($guidelines, selectors, loc);
-debug (`text: ${text}`);
+//debug (`text: ${text}`);
 display (text);
-//statusMessage ("Ready.");
+statusMessage ("Ready.");
 
 $tree.on ("selectNode", function (e) {
 var loc, text;
 
-debug ();
+//debug ();
 loc = location($tree, $(e.target));
-debug (`loc: ${loc}`);
+//debug (`loc: ${loc}`);
 text = extractText($guidelines, selectors, loc);
-debug (`text: ${text}`);
+//debug (`text: ${text}`);
 display (text);
 });
 });
@@ -108,7 +108,7 @@ $node = $doc;
 for (var depth=0; depth<loc.length; depth++) {
 selector = selectors[depth];
 index = loc[depth];
-debug (`- search: ${depth} ${index}`);
+//debug (`- search: ${depth} ${index}`);
 $nodes = $node.find (selector[0]);
 $node = $nodes.eq(index);
 } // for

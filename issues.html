@@ -36,7 +36,7 @@
 <button class="cancel">Cancel</button>
 </span>
 </div><div>
-<label>Select issue: <select id="issues"></select></label>
+<label>Select issue: <select id="issueSelector"></select></label>
 <button id="delete" accesskey="d">Delete</button>
 </div>
 </nav>
@@ -86,7 +86,11 @@
 
 <hr>
 
-<div id="issues" role="region">
+<div id="issueDisplay" role="region">
+<label>Display as:<select class="type">
+<option value="table">Table</option>
+<option value="list">List</option>
+</select></label>
 <h2>Issues</h2>
 </div>
 
@@ -98,21 +102,22 @@
 
 <script>
 var issueNumber = 0;
-
-var $headers = $('<tr></tr>')
-.append (createTableHeaders ( $("#issue-create [data-name]")));
-alert ($headers.html());
+var fieldNames = getFieldNames ($('#issue-create [data-name]'));
+var issues = [];
 
 $("#issue-create").on ("submit", function (e) {
-issueNumber += 1;
-
-$(`<td>${issueNumber}</td>`)
-.add (createIssue (getIssueData ( $("[data-name]", "#issue-create") )))
-.appendTo ('<tr class="issue"></tr>')
-.appendTo ($("#issues > table"));
+issues.push (getIssueData ($("#issue-create [data-name]")));
+generateIssueDisplay (issues);
+statusMessage (`${issues.length} issues.`);
 
 return false;
 }); // create
+
+$("#issueDisplay .type").on ("change", function () {
+generateIssueDisplay (issues);
+statusMessage ("Display reset.");
+return true;
+});
 
 $("#save").on ("click", function (e) {
 var url = createBlob (issueListData());
@@ -145,59 +150,81 @@ $("#download-controls").hide ();
 }); // click .cancel
 
 function issueListData () {
-var issues = [];
-
-$("#issues .issue").each (function () {
-var issue = [];
-
-$("[data-name]", this).each (function () {
-issue.push ({
-name: $(this).attr("data-name"),
-value: $(this).text()
-});
-}); // each field
-
-issues.push (issue);
-}); // each issue
-
 return issues;
 } // issueListData
 
-function createTableHeaders ($fields) {
-alert (`fields: ${$fields.length}`);
-var $headers = $fields.map (function (i, element) {
-var name = $(element).attr ("data-name");
-return $(`<th>${name}</th>`);
-});
+function generateIssueDisplay (issues) {
+$("#issueDisplay table, #issueDisplay ol").remove ();
+createIssueDisplay (issues, $("#issueDisplay .type").val())
+.appendTo ("#issueDisplay");
+} // generateIssueDisplay
 
-$headers = $('<th>Number</th>').add ($headers);
-alert (`headers: ${$headers.length}`);
-$headers = $('<tr></tr>').append ($headers);
-statusMessage(`$headers: ${$headers.html()}`);
+function createIssueDisplay (issues, type) {
+if (type === "table") {
+return createIssueTable (issues);
+} else if (type === "list") {
+return createIssueList (issues);
+} else {
+alert (`createIssueDisplay: invalid type -- ${type}`);
+return null;
+} // if
+} // createIssueDisplay
+function createTableHeaders (fieldNames) {
+var $headers = $('<tr><th>Number</th></tr>');
+
+fieldNames.forEach ((name) => $headers.append (`<th>${name}</th>`));
 return $headers;
 } // createTableHeaders
 
+function createIssueTable (issues) {
+var $issues = $('<table><thead></thead><tbody></tbody></table>');
+$("thead", $issues).append (createTableHeaders (fieldNames));
 
-function createIssue (data) {
-var $issue = $();
+issues.forEach (function (issue, index) {
+var $issue = $(`<tr class="issue"><td>${index+1}</td></tr>`);
 
-data.forEach (function (data) {
-$issue = $issue.add ( $(`<td data-name="${data.name}">${data.value}</td>`) );
-}); // forEach
+issue.forEach (function (field) {
+var $field = $('<td></td>');
+$field.data ("name", field.name);
+$field.text (field.value);
+$issue.append ($field);
+}); // forEach issue
 
-alert ($issue.length);
-return $issue;
-} // createIssue
+$("tbody", $issues).append ($issue);
+}); // forEach issues
+
+return $issues;
+} // createIssueTable
+
+function createIssueList (issues) {
+var $issues = $('<ol></ol>');
+
+issues.forEach (function (issue, index) {
+var $issue = $(`<li class="issue"></li>`);
+
+issue.forEach (function (field) {
+var $field = $('<div></div>');
+$field.html (`
+<span class="name">${field.name}</span>
+<span class="value">${field.value}</span>
+`);
+$issue.append ($field);
+}); // forEach issue
+
+$issues.append ($issue);
+}); // forEach issues
+
+return $issues;
+} // createIssueList
+
 function getIssueData ($issue) {
 var issueData = [];
-alert (`getIssueData: ${$issue.length}`);
 
 issueData = $issue.get().map (function (element) {
-var name = $(element).attr ("data-name");
+var name = $(element).data ("name");
 return {name: name, value: $(element).val()};
 }); // map
 
-alert (JSON.stringify(issueData));
 return issueData;
 } // getIssueData
 
@@ -206,6 +233,10 @@ function createBlob (object) {
 var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
 return URL.createObjectURL(data);
 } // createBlob
+
+function getFieldNames ($fields) {
+return $fields.map ((i, element) => $(element).data ("name")).get();
+} // getFieldNames
 
 function statusMessage (message) {
 $("#status").html("").text(message);
