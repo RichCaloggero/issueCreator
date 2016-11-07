@@ -151,6 +151,16 @@ return false;
 });
 
 $("#load").on ("click", function (e) {
+var projectName = $("#projectName").val ();
+if (projectName) {
+$("#download-controls").show ()
+.find (".fileName").attr ({
+"type": "file",
+"value": projectName
+})
+.focus ();
+} // if
+
 
 }); // load
 
