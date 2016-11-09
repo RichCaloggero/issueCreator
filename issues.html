@@ -7,7 +7,7 @@
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 <style>
 #issue-create span {display: block;}
-#download-controls {display: none;}
+#fileControls {display: none;}
 </style>
 
 <script src="jquery.min.js"></script>
@@ -21,24 +21,31 @@
 
 </head>
 <body>
-<h1>Issues</h1>
+<div id="app">
+<h1 class="title">
+<span class="name">Accessibility Issue Creator</span>
+<span class="separator" style="display:none"> - </span>
+<span class="projectName"></span>
+</h1>
+</div><!-- #app -->
+
 <div id="status" role="region" aria-label="Status" aria-live="polite">
 </div>
 
 <nav>
 <div>
+<button id="new" accesskey="n">New</button>
 <label> Project name: <input type="text" id="projectName"></label>
-<button id="load" accesskey="l">Load Issues</button>
-<button id="save" accesskey="s">Save Issues</button>
-<span id="download-controls">
-<label>Filename: <input type="text" class="fileName"></label>
-<a class="download" href="#">Download</a>
+<button id="load" accesskey="l">Load</button>
+<button id="save" accesskey="s">Save</button>
+<span id="fileControls">
+<label>Filename: <input hidden type="text" class="fileName"></label>
+<a class="continue" href="#">Continue</a>
 <button class="cancel">Cancel</button>
 </span>
 </div><div>
 <label>Select issue: <select id="issueSelector"></select></label>
 <button id="delete" accesskey="d">Delete</button>
-<button id="clear" accesskey="c">Clear (delete all)</button>
 </div>
 </nav>
 
@@ -102,85 +109,46 @@
 
 
 <script>
-var issueNumber = 0;
-var fieldNames = getFieldNames ($('#issue-create [data-name]'));
-var issues = [];
+"use strict";
+const fieldNames = getFieldNames ($('#issue-create [data-name]'));
+const project = {};
+initializeProject (project);
+$(project).on ("update", (e) => projectUpdated(e.target));
 
-statusMessage ("Ready.");
-if (localStorage) {
-if (localStorage.issues) {
-issues = JSON.parse(localStorage.issues)
-generateIssueDisplay (issues);
-generateIssueSelector (issues);
-statusMessage (`${issues.length} issues loaded.`);
-} // if
+/// projects
 
-} else {
-alert ("Local storage not available");
-} // if
-
-
-$("#issue-create").on ("submit", function (e) {
-issues.push (getIssueData ($("#issue-create [data-name]")));
-if (localStorage) localStorage.issues = JSON.stringify(issues);
-generateIssueDisplay (issues);
-generateIssueSelector (issues);
-statusMessage (`${issues.length} issues.`);
-
+$("#new").on ("click", function () {
+if (project.durty && !confirm ("Continuing will remove unsaved project data! Do you wish to continue?")) return;
+initializeProject (project, "clear local storage");
+statusMessage ("New Project initialized.");
 return false;
-}); // create
-
-$("#issueDisplay .type").on ("change", function () {
-generateIssueDisplay (issues);
-statusMessage ("Display reset.");
-return true;
-});
-
-$("#issueSelector").on ("change", function () {
-var issue = issues[Number($(this).val())];
-setIssueData ($("#issue-create [data-name]"), issue);
-return true;
-});
-
-$("#clear").on ("click", function () {
-if (localStorage) localStorage.issues = [];
-issues = [];
-generateIssueDisplay (issues);
-statusMessage ("All issues deleted!");
-return false;
-});
+}); // new
 
 $("#load").on ("click", function (e) {
-var projectName = $("#projectName").val ();
-if (projectName) {
-$("#download-controls").show ()
-.find (".fileName").attr ({
+if (project.durty && !confirm ("Continuing will remove unsaved project data! Do you wish to continue?")) return;
+
+$("#fileControls").show ();
+$("#fileControls .fileName").attr ({
+"title": "Select File",
 "type": "file",
-"value": projectName
-})
-.focus ();
-} // if
+}).trigger ("click");
 
-
+return false;
 }); // load
 
 $("#save").on ("click", function (e) {
-var url = createBlob (issues);
+var url = createBlob (project.issues);
 var projectName = $("#projectName").val ();
+
 if (projectName) {
-$("#download-controls .download").attr ({
+$("#fileControls .continue").attr ({
 "href": url,
 "download": projectName + ".json"
 });
 
-$("#download-controls").show ()
-.find (".download")
+$("#fileControls").show ()
+.find (".continue")
 .focus ();
-
-//$("#download-controls").show ()
-//.find (".fileName")
-//.val (projectName + ".json")
-//.focus ();
 
 } else {
 statusMessage ("Need a project name.");
@@ -189,36 +157,130 @@ $("#projectName").focus ();
 return false;
 }); // save
 
-$("#download-controls")
-/*.on ("focusout", ".fileName", function (e) {
-$("#download-controls .download").attr ("download", $(e.target).val());
-return true;
-})
-*/.on ("click", ".download", function (e) {
-var fileName = $(e.target).attr ("download");
+$("#fileControls")
+.on ("change", ".fileName", function (e) {
+var fileSelector = e.target;
+var file = fileSelector.files[0];
+var reader = null;
 
-if (fileName) {
-$("#download-controls").hide ();
-return true;
+debug (`event ${e.type}`);
 
-} else {
-statusMessage ("No file name given.");
-$("#download-controls .fileName").focus ();
+if (! file) {
+statusMessage ("cannot select file.");
 return false;
 } // if
+
+debug(`file: ${file.size} ${file.name}`);
+
+reader = new FileReader ();
+reader.readAsText (file);
+
+$(reader).on ("load", function () {
+var newProject = reader.result;
+
+try {
+newProject = JSON.parse (reader.result);
+Object.assign (project, newProject);
+update (project);
+
+} catch (e) {
+statusMessage (`${e} -- cannot parse file.`);
+} // try
+
+}); // file.load
+
 }).on ("click", ".cancel", function (e) {
 $("#save").focus ();
 $("#download-controls").hide ();
-}); // click .cancel
 
-function issueListData () {
-return issues;
-} // issueListData
+}).on ("click", ".continue", function (e) {
+if ($(e.target).attr ("download")) {
+$("#fileControls").hide ();
+return true;
+} // if
+
+return false;
+});
+
+
+function initializeProject (project, clearLocalStorage) {
+Object.assign (project,{
+name: "",
+issues: [],
+durty: false
+});
+
+
+if (localStorage) {
+if (clearLocalStorage) {
+localStorage.project = null;
+} else if (localStorage.project) {
+project = JSON.parse(localStorage.project);
+} // if
+
+} else {
+alert ("Local storage not available, so download often!");
+} // if
+
+statusMessage ("Ready.");
+return project;
+} // initializeProject
+
+
+function update (object) {
+$(object).trigger ("update");
+} // update
+
+function projectUpdated (project) {
+if (localStorage) {
+localStorage.project = JSON.stringify (project);
+} // if
+
+updateAppTitle (project.name);
+generateIssueDisplay (project.issues);
+} // projectUpdated
+
+function updateAppTitle (name) {
+if (name) {
+$("#app .projectName").text (name);
+$("#app .separator").show ();
+$("title").text ( $("#app .title").text() );
+
+} else {
+$("#app .projectName").text ("");
+$("#app .separator").hide ();
+$("title").text ( $("#app .name").text() );
+} // if
+
+} // updateAppTitle
+
+/// issues
+
+$("#issue-create").on ("submit", function (e) {
+project.issues.push (getIssueData ($("#issue-create [data-name]")));
+update (project);
+return false;
+}); // create
+
+$("#issueDisplay .type").on ("change", function () {
+generateIssueDisplay (project.issues);
+statusMessage ("Display reset.");
+return true;
+});
+
+$("#issueSelector").on ("change", function () {
+var index = Number($(this).val ());
+var issue = project.issues[index];
+setIssueData ($("#issue-create [data-name]"), issue);
+return true;
+});
 
 function generateIssueDisplay (issues) {
 $("#issueDisplay table, #issueDisplay ol").remove ();
 createIssueDisplay (issues, $("#issueDisplay .type").val())
 .appendTo ("#issueDisplay");
+generateIssueSelector (issues);
+statusMessage (`${project.issues.length} issues loaded.`);
 } // generateIssueDisplay
 
 function createIssueDisplay (issues, type) {
@@ -334,6 +396,7 @@ return $fields.map ((i, element) => $(element).data ("name").trim()).get();
 function statusMessage (message) {
 $("#status").html("").text(message);
 } // statusMessage
+
 
 </script>
 
