@@ -1,4 +1,4 @@
-$(document).ready(function(){
+function initializeWcagBrowser ($ui) {
 //debug ("--start--");
 
 // import data
@@ -14,15 +14,14 @@ tree = importTreeData (data);
 html = tree2html (tree);
 //debug ("html: ", html);
 
-$("#menu-container").html (html);
+$(".menu", $ui).html (html);
 //debug ("html added");
 
-$("#menu-container > ul")
-.attr ("id", "menu")
+$(".menu > ul", $ui)
 .addClass ("sf-menu");
 
 // initialise plugin
-$menu = $('#menu').superfish({
+$menu = $(".sf-menu", $ui).superfish({
 //add options here if required
 });
 
@@ -51,9 +50,7 @@ var import_wcagData = $.get ("http://www.w3.org/TR/WCAG20/")
 .fail (function (error) {
 alert (error.message);
 }).done (function (data) {
-
 //debug ("Guidelines loaded");
-
 
 }); // ajax
 
@@ -74,6 +71,7 @@ loc = location($tree, getSelectedNode($tree));
 text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
 display (text);
+$ui.trigger ("loaded");
 
 $tree.on ("selectNode", function (e) {
 var loc, text;
@@ -85,7 +83,29 @@ text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
 display (text);
 });
-});
+
+function display (text) {
+var loc = location($tree, getSelectedNode($tree));
+
+if (loc.length-1 >= getVerbosity()) {
+$(".text", $ui).attr ("aria-live", "polite");
+} else {
+$(".text", $ui).attr ("aria-live", "off");
+} // if
+
+setTimeout (function () {
+$(".text", $ui).html (text)
+}, 200);
+} // display
+
+function getVerbosity () {
+return $(".verbosity", $ui).val();
+} // getVerbosity
+
+
+}); // when
+
+/// tree helpers
 
 function location ($tree, $node) {
 var loc = [];
@@ -122,26 +142,8 @@ return $("#" + id, $tree);
 
 
 
-function display (text) {
-var $tree = $("#menu");
-var loc = location($tree, getSelectedNode($tree));
 
-if (loc.length-1 >= getVerbosity()) {
-$("#text").attr ("aria-live", "polite");
-} else {
-$("#text").attr ("aria-live", "off");
-} // if
-
-setTimeout (function () {
-$("#text").html (text)
-}, 200);
-} // display
-
-function getVerbosity () {
-return $("#verbosity").val();
-} // getVerbosity
-
-}); // ready
+} // initializeWcagBrowser
 
 
 

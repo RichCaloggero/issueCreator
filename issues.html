@@ -66,20 +66,18 @@
 
 <div class="wcag-browser">
 <h2>WCAG-2.0 Browser</h2>
-<nav>
 <label>Verbosity:
-<select id="verbosity">
+<select class="verbosity">
 <option value="0">Principles</option>
 <option value="1">Guidelines</option>
 <option selected value="2">Criteria</option>
 <option value="3">Off</option>
 </select></label>
 
-<div id="menu-container">
+<div class="menu">
 </div>
-</nav>
 
-<div id="text" aria-live="polite">
+<div class="text" aria-live="polite">
 </div>
 </div><!-- #wcag-browser -->
 
@@ -91,7 +89,7 @@
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </span>
 
-<input class="create" type="submit" value="Submit">
+<input class="submit" type="submit" value="Submit">
 </form>
 </div>
 
@@ -116,6 +114,8 @@
 "use strict";
 const fieldNames = getFieldNames ($('#issue-create [data-name]'));
 const project = {};
+
+initializeWcagBrowser ($("#issues .create .wcag-browser"));
 initializeProject (project);
 $(project).on ("update", (e) => projectUpdated(e.target));
 
@@ -269,6 +269,10 @@ $("title").text ( $("#app .name").text() );
 /// issues
 
 $("#issues")
+.on ("loaded", ".wcag-browser", function () {
+statusMessage ("Guideline data loaded.");
+})
+
 .on ("click", ".create .browse", function () {
 var $browser = $("#issues .create .wcag-browser");
 if ($browser.is (":visible")) {
