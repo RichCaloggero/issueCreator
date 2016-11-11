@@ -39,7 +39,7 @@
 <button class="load" accesskey="l">Load</button>
 <button class="save" accesskey="s">Save</button>
 <span class="file">
-<label>Choose file: <input hidden type="file" class="name"></label>
+<label>Choose file: <input hidden type="file" class="selector"></label>
 <a class="download" href="#">Download</a>
 <button class="cancel">Cancel</button>
 </span>
@@ -57,10 +57,10 @@
 <h2>Create Issue</h2>
 
 <div class="field">
-<label>Title: <input type="text" data-name="title" required></label>
+<label>Title: <input type="text" data-name="title" required accesskey="t"></label>
 </div><div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
-<span class="guidelineFull"></span>
+<span data-name="guidelineFull"></span>
 <button class="browse" aria-expanded="false">Browse</button>
 
 <div class="wcag-browser">
@@ -81,7 +81,7 @@
 </div><div class="field">
 <label>Priority: <input type="range" data-name="priority" min="1" max="5"></label>
 </div><div class="field">
-<label>Full description <textarea data-name="long-description" required></textarea></label>
+<label>Full description <textarea data-name="description" required></textarea></label>
 </div><div class="field">
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </div>
@@ -108,7 +108,7 @@
 
 <script>
 "use strict";
-const fieldNames = getFieldNames ($('#issue-create [data-name]'));
+const fieldNames = getFieldNames ($('#issues .create [data-name]'));
 const project = {};
 
 initializeWcagBrowser ($("#issues .create .wcag-browser"));
@@ -125,13 +125,6 @@ statusMessage ("New Project initialized.");
 return false;
 }) // new
 
-.on ("click", ".delete", function (e) {
-var index = $("#project .selector").val ();
-alert(`deleting ${index}`);
-project.issues.splice (index, 1);
-update (project);
-return true;
-}) // .delete
 
 .on ("click", ".load", function (e) {
 if (project.durty && !confirm ("Continuing will remove unsaved project data! Do you wish to continue?")) return;
@@ -155,19 +148,19 @@ update (project, {status: false});
 return true;
 }) // change projectName
 
-.on ("change", ".file .name", function (e) {
+.on ("change", ".file .selector", function (e) {
 var fileSelector = e.target;
 var file = fileSelector.files[0];
 var reader = null;
 
-debug (`event ${e.type}`);
+//debug (`event ${e.type}`);
 
 if (! file) {
 statusMessage ("cannot select file.");
 return false;
 } // if
 
-debug(`file: ${file.size} ${file.name}`);
+//debug(`file: ${file.size} ${file.name}`);
 
 reader = new FileReader ();
 reader.readAsText (file);
@@ -187,7 +180,7 @@ statusMessage (`${e} -- cannot parse file.`);
 } // try
 }); // file.load
 return true;
-}) // change .fileName
+}) // change .file .selector
 
 .on ("click", ".file .cancel", function (e) {
 $("#project .save").focus ();
@@ -225,7 +218,7 @@ return project;
 } // initializeProject
 
 function loadProject (project) {
-$("#project .file .name").trigger ("click");
+$("#project .file .selector").trigger ("click");
 } // loadProject
 
 function saveProject (project) {
@@ -280,7 +273,7 @@ var level = $html.text().match (/\(Level (A+)\)/);
 var levelText = (level)? `(${level[1]})` : "";
 
 $("#issues .create [data-name=guideline]").val (`${text} ${levelText}`);
-$("#issues .create .guidelineFull").html (html);
+$("#issues .create [data-name=guidelineFull]").html (html);
 }); // display text in WCAG browser
 
 
@@ -308,12 +301,12 @@ return true;
 }) // browse
 
 .on ("click", ".submit", function (e) {
-var invalid = checkValidity($("#issues .create [data-name]"));
+var invalid = checkValidity($("#issues .create [data-name]").not ("[data-name=guidelineFull]"));
 
 if (invalid.length > 0) {
 statusMessage ("Invalid issue; please correct and resubmit.");
 invalid[0].focus ();
-return true;
+return false;
 } // if
 
 project.issues.push (getIssueData ($("#issues .create [data-name]")));
@@ -321,6 +314,19 @@ project.durty = true;
 update (project);
 return false;
 }) // create
+
+.on ("click", ".delete", function (e) {
+var index = $("#issues .selector").val ();
+if (index >= 0) {
+project.issues.splice (index, 1);
+project.durty = true;
+update (project);
+} // if
+
+$("#issues .selector").focus ()
+.find ("option:first").trigger ("click");
+return true;
+}) // .delete
 
 .on ("change", ".display .type", function () {
 generateIssueDisplay (project.issues);
@@ -358,6 +364,7 @@ alert (`createIssueDisplay: invalid type -- ${type}`);
 return null;
 } // if
 } // createIssueDisplay
+
 function createTableHeaders (fieldNames) {
 var $headers = $('<tr><th>Number</th></tr>');
 
@@ -375,7 +382,8 @@ var $issue = $(`<tr class="issue"><td>${index+1}</td></tr>`);
 issue.forEach (function (field) {
 var $field = $('<td></td>');
 $field.data ("name", field.name);
-$field.text (field.value);
+if (field.name === "guidelineFull") $field.html (field.value);
+else $field.text (field.value);
 $issue.append ($field);
 }); // forEach issue
 
@@ -410,8 +418,10 @@ function getIssueData ($issue) {
 var issueData = [];
 
 issueData = $issue.get().map (function (element) {
-var name = $(element).data ("name");
-return {name: name.trim(), value: $(element).val().trim()};
+var name = $(element).data ("name").trim();
+var value = $(element).val? $(element).val().trim()
+: $(element).html().trim();
+return {name: name, value: value};
 }); // map
 
 return issueData;
@@ -419,7 +429,13 @@ return issueData;
 
 function setIssueData ($issue, data) {
 $issue.each (function (i, element) {
-$(this).val (data[i].value);
+var name = $(element).data ("name");
+var field;
+
+if (field = data.find ((x) => x.name === name)) {
+if ($(this).val) $(this).val (field.value);
+else $(this).html (field.value);
+} // if
 }); // each
 } // setIssueData
 
@@ -464,9 +480,11 @@ setTimeout (() => $("#status").html("").text(message), 100);
 } // statusMessage
 
 function checkValidity ($fields) {
-return $fields.get().map (function (element) {
+return $fields.get().filter(function (element) {
+var name = element.nodeName.toLowerCase();
+debug ("checking ", name);
 if (
-(element.nodeName.toLowerCase() === "input" || element.nodeName.toLowerCase() === "textarea")
+(name === "input" || name === "textarea")
 && !element.validity.valid
 ) return element;
 }); // map
