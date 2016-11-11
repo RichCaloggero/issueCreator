@@ -419,8 +419,11 @@ var issueData = [];
 
 issueData = $issue.get().map (function (element) {
 var name = $(element).data ("name").trim();
-var value = $(element).val? $(element).val().trim()
-: $(element).html().trim();
+var value;
+
+value  = $(element).is(":input")? $(element).val().trim()
+: $(element).html();
+debug (name, value);
 return {name: name, value: value};
 }); // map
 
@@ -433,7 +436,7 @@ var name = $(element).data ("name");
 var field;
 
 if (field = data.find ((x) => x.name === name)) {
-if ($(this).val) $(this).val (field.value);
+if ($(this).is(":input")) $(this).val (field.value);
 else $(this).html (field.value);
 } // if
 }); // each
