@@ -30,7 +30,7 @@
 </h1>
 </div><!-- #app -->
 
-<div id="status" role="region" aria-label="Status" aria-live="polite">
+<div id="status" role="region" aria-label="Status" aria-live="assertive">
 </div>
 
 <main>
@@ -41,7 +41,7 @@
 <button class="save" accesskey="s">Save</button>
 <span class="file">
 <label>Choose file: <input hidden type="file" class="name"></label>
-<a class="continue" href="#">Continue</a>
+<a class="download" href="#">Download</a>
 <button class="cancel">Cancel</button>
 </span>
 </div>
@@ -57,7 +57,6 @@
 <div class="create" role="region">
 <h2>Create Issue</h2>
 
-<form>
 <span class="field">
 <label>Title: <input type="text" data-name="title"></label>
 </span><span class="field">
@@ -89,8 +88,7 @@
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </span>
 
-<input class="submit" type="submit" value="Submit">
-</form>
+<button class="submit">Submit</button>
 </div>
 
 <hr>
@@ -117,7 +115,7 @@ const project = {};
 
 initializeWcagBrowser ($("#issues .create .wcag-browser"));
 initializeProject (project);
-$(project).on ("update", (e) => projectUpdated(e.target));
+$(project).on ("update", (e, data) => projectUpdated(e.target, data));
 
 /// projects
 
@@ -147,7 +145,7 @@ return false;
 
 .on ("change", ".projectName", function (e) {
 project.name = $(e.target).val ();
-update (project);
+update (project, {status: false});
 return true;
 }) // change projectName
 
@@ -174,15 +172,15 @@ var newProject = reader.result;
 try {
 newProject = JSON.parse (reader.result);
 Object.assign (project, newProject);
-update (project);
-$(e.target).focus ();
+project.durty = false;
+$("#issues .selector").focus ();
+update (project, {message: "loaded"});
 
 } catch (e) {
 statusMessage (`${e} -- cannot parse file.`);
 } // try
-
 }); // file.load
-
+return true;
 }) // change .fileName
 
 .on ("click", ".file .cancel", function (e) {
@@ -190,13 +188,9 @@ $("#project .save").focus ();
 $("#project .file").hide ();
 }) // cancel
 
-.on ("click", ".continue", function (e) {
-if ($(e.target).attr ("download")) {
-$("#fileControls").hide ();
+.on ("click", ".download", function (e) {
+$("#project .file").hide ();
 return true;
-} // if
-
-return false;
 });
 
 // helpers
@@ -231,18 +225,19 @@ $("#project .file .name").trigger ("click");
 function saveProject (project) {
 var url =  createBlob (project);
 $("#project .file").show ()
-.find (".continue").attr ({
+.find (".download").attr ({
 "href": url,
 "download": project.name + ".json"
 }).focus ();
 } // saveProject
 
 
-function update (object) {
-$(object).trigger ("update");
+function update (object, data) {
+data = Object.assign ({displayStatus: true, message: ""}, data);
+$(object).trigger ("update", data);
 } // update
 
-function projectUpdated (project) {
+function projectUpdated (project, data) {
 if (localStorage) {
 localStorage.project = JSON.stringify (project);
 } // if
@@ -250,6 +245,7 @@ localStorage.project = JSON.stringify (project);
 $("#project .projectName").val (project.name);
 updateAppTitle (project.name);
 generateIssueDisplay (project.issues);
+if (data.displayStatus) statusMessage (`${project.issues.length} issues${(" " + data.message) || ""}.`);
 } // projectUpdated
 
 function updateAppTitle (name) {
@@ -287,8 +283,9 @@ $(e.target).attr ("aria-expanded", "true");
 
 return false;
 }) // browse
-.on ("submit", function (e) {
+.on ("click", ".submit", function (e) {
 project.issues.push (getIssueData ($("#issues .create [data-name]")));
+project.durty = true;
 update (project);
 return false;
 }) // create
@@ -313,7 +310,6 @@ $("#issues .display table, #issues .display ol").remove ();
 createIssueDisplay (issues, $("#issues .display .type").val())
 .appendTo ("#issues .display");
 generateIssueSelector (issues);
-statusMessage (`${project.issues.length} issues loaded.`);
 } // generateIssueDisplay
 
 function createIssueDisplay (issues, type) {
