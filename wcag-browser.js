@@ -1,3 +1,4 @@
+"use strict";
 function initializeWcagBrowser ($ui) {
 //debug ("--start--");
 
@@ -63,15 +64,15 @@ var selectors = [
 ];
 var $wcag = $('<div class="document" id="wcag-2.0"></div>').append (wcagData);
 var $guidelines = $wcag.find (".body .div1:first");
-var $tree = $("#menu");
+var $tree = $(".menu", $ui);
 var loc, text;
 
 loc = location($tree, getSelectedNode($tree));
 //debug (`loc: ${loc}`);
 text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
-display (text);
 $ui.trigger ("loaded");
+display (text);
 
 $tree.on ("selectNode", function (e) {
 var loc, text;
@@ -94,7 +95,8 @@ $(".text", $ui).attr ("aria-live", "off");
 } // if
 
 setTimeout (function () {
-$(".text", $ui).html (text)
+$(".text", $ui).html (text);
+$ui.trigger ("display", $(".text", $ui).text());
 }, 200);
 } // display
 
@@ -121,7 +123,7 @@ return loc.reverse();
 } // location
 
 function extractText ($doc, selectors, loc) {
-var selector, $nodes, $node;
+var index, selector, $nodes, $node;
 
 $node = $doc;
 for (var depth=0; depth<loc.length; depth++) {
@@ -139,8 +141,6 @@ function getSelectedNode ($tree) {
 var id = $tree.attr("aria-activedescendant");
 return $("#" + id, $tree);
 } // getSelected
-
-
 
 
 } // initializeWcagBrowser
