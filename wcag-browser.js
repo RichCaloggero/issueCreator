@@ -6,7 +6,8 @@ function initializeWcagBrowser ($ui) {
 var import_treeData = jQuery.ajax({url: "wcag-data.txt", dataType: "text"})
 .fail (function (error) {alert (JSON.stringify(error));})
 .done (function (data) {
-var html, tree, $menu;
+var html, tree, $menuContainer, $menu;
+$menuContainer = $(".menu", $ui);
 
 //debug ("text: ", data);
 tree = importTreeData (data);
@@ -15,7 +16,7 @@ tree = importTreeData (data);
 html = tree2html (tree);
 //debug ("html: ", html);
 
-$(".menu", $ui).html (html);
+$menuContainer.html (html);
 //debug ("html added");
 
 $(".menu > ul", $ui)
@@ -64,7 +65,7 @@ var selectors = [
 ];
 var $wcag = $('<div class="document" id="wcag-2.0"></div>').append (wcagData);
 var $guidelines = $wcag.find (".body .div1:first");
-var $tree = $(".menu", $ui);
+var $tree = $(".sf-menu", $ui);
 var loc, text;
 
 loc = location($tree, getSelectedNode($tree));
@@ -87,16 +88,17 @@ display (text);
 
 function display (text) {
 var loc = location($tree, getSelectedNode($tree));
+var $text = $(".text", $ui);
 
 if (loc.length-1 >= getVerbosity()) {
-$(".text", $ui).attr ("aria-live", "polite");
+$text.attr ("aria-live", "polite");
 } else {
-$(".text", $ui).attr ("aria-live", "off");
+$text.attr ("aria-live", "off");
 } // if
 
 setTimeout (function () {
-$(".text", $ui).html (text);
-$ui.trigger ("display", $(".text", $ui).text());
+$text.html (text);
+$ui.trigger ("display", text);
 }, 200);
 } // display
 

@@ -60,6 +60,7 @@
 <label>Title: <input type="text" data-name="title"></label>
 </div><div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
+<span class="guidelineFull"></span>
 <button class="browse" aria-expanded="false">Browse</button>
 
 <div class="wcag-browser">
@@ -272,8 +273,13 @@ $("title").text ( $("#app .name").text() );
 
 /// wcag browser
 
-$("#issues .create .browser").on ("display", function (e, text) {
-$("#issues .create [data-name=guideline]").val (text);
+$("#issues .create .wcag-browser").on ("display", function (e, html) {
+var $html = $('<div></div>').html (html);
+var text = $html.find (".sc-handle").text ();
+var level = $html.text().match (/\(Level (A+)\)/);
+
+$("#issues .create [data-name=guideline]").val (`${text} (${level[1]})`);
+$("#issues .create .guidelineFull").html (html);
 }); // display text in WCAG browser
 
 
@@ -287,12 +293,11 @@ statusMessage ("Guideline data loaded.");
 .on ("click", ".create .browse", function (e) {
 var $browser = $("#issues .create .wcag-browser");
 var $browse = $(e.target);
+
 if ($browse.attr("aria-expanded") === "true") {
 $browser.hide ();
 $browse.attr ("aria-expanded", "false");
-} // if
-
-if ($browse.attr ("aria-expanded") === "false") {
+} else if ($browse.attr ("aria-expanded") === "false") {
 $browser.show ()
 .find (".verbosity").focus ();
 $browse.attr ("aria-expanded", "true");
