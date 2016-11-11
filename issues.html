@@ -29,7 +29,7 @@
 </h1>
 </div><!-- #app -->
 
-<div id="status" role="region" aria-label="Status" aria-live="assertive">
+<div id="status" role="region" aria-label="Status" aria-live="polite">
 </div>
 
 <main>
@@ -57,7 +57,7 @@
 <h2>Create Issue</h2>
 
 <div class="field">
-<label>Title: <input type="text" data-name="title"></label>
+<label>Title: <input type="text" data-name="title" required></label>
 </div><div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
 <span class="guidelineFull"></span>
@@ -81,7 +81,7 @@
 </div><div class="field">
 <label>Priority: <input type="range" data-name="priority" min="1" max="5"></label>
 </div><div class="field">
-<label>Full description <textarea data-name="long-description"></textarea></label>
+<label>Full description <textarea data-name="long-description" required></textarea></label>
 </div><div class="field">
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </div>
@@ -277,8 +277,9 @@ $("#issues .create .wcag-browser").on ("display", function (e, html) {
 var $html = $('<div></div>').html (html);
 var text = $html.find (".sc-handle").text ();
 var level = $html.text().match (/\(Level (A+)\)/);
+var levelText = (level)? `(${level[1]})` : "";
 
-$("#issues .create [data-name=guideline]").val (`${text} (${level[1]})`);
+$("#issues .create [data-name=guideline]").val (`${text} ${levelText}`);
 $("#issues .create .guidelineFull").html (html);
 }); // display text in WCAG browser
 
@@ -307,6 +308,14 @@ return true;
 }) // browse
 
 .on ("click", ".submit", function (e) {
+var invalid = checkValidity($("#issues .create [data-name]"));
+
+if (invalid.length > 0) {
+statusMessage ("Invalid issue; please correct and resubmit.");
+invalid[0].focus ();
+return true;
+} // if
+
 project.issues.push (getIssueData ($("#issues .create [data-name]")));
 project.durty = true;
 update (project);
@@ -451,9 +460,17 @@ return $fields.map ((i, element) => $(element).data ("name").trim()).get();
 } // getFieldNames
 
 function statusMessage (message) {
-$("#status").html("").text(message);
+setTimeout (() => $("#status").html("").text(message), 100);
 } // statusMessage
 
+function checkValidity ($fields) {
+return $fields.get().map (function (element) {
+if (
+(element.nodeName.toLowerCase() === "input" || element.nodeName.toLowerCase() === "textarea")
+&& !element.validity.valid
+) return element;
+}); // map
+} // checkValidity
 
 </script>
 
