@@ -1,5 +1,5 @@
 "use strict";
-function initializeWcagBrowser ($ui) {
+function initializeWcagBrowser ($ui, $display) {
 //debug ("--start--");
 
 // import data
@@ -63,16 +63,16 @@ var $wcag = $('<div class="document" id="wcag-2.0"></div>').append (wcagData);
 var $guidelines = $wcag.find (".body .div1:first");
 var $tree = $(".sf-menu", $ui);
 
-display (getFullText(getSelectedNode ($tree)));
+display (getFullText(getSelectedNode ($tree)), $display);
 
 $tree.on ("selectNode", function (e) {
-display (getFullText($(e.target)));
+display (getFullText($(e.target)), $display);
 return false;
 }); // selectNode
 
 function getFullText (node) {
 var loc = location($tree, node);
-debug (`loc: ${loc}`);
+//debug (`loc: ${loc}`);
 var text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
 return text;
@@ -93,11 +93,12 @@ $node = $nodes.eq(index);
 return $node.find (selector[1]).html();
 } // extractText
 
-function display (text) {
+function display (text, $display) {
 var loc = location($tree, getSelectedNode($tree));
-var $text = $(".text", $ui);
-//debug ("display: ", loc, text);
-debug ("verbosity: ", getVerbosity(), (loc.length)-1);
+var $text = ($display && $display.length === 1)? 
+$display : $(".text", $ui);
+//debug ("display: ", $text.attr("data-name"));
+//debug ("verbosity: ", getVerbosity(), (loc.length)-1);
 
 if ((loc.length) - 1 >= getVerbosity()) {
 $text.attr ("aria-live", "polite");
@@ -105,10 +106,11 @@ $text.attr ("aria-live", "polite");
 $text.attr ("aria-live", "off");
 } // if
 
+
 setTimeout (function () {
 $text.html (text);
-$ui.trigger ("display", text);
-}, 2000);
+$text.trigger ("display", text);
+}, 100);
 } // display
 
 function getVerbosity () {

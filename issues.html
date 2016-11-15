@@ -60,7 +60,7 @@
 <label>Title: <input type="text" data-name="title" required accesskey="t"></label>
 </div><div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
-<span data-name="guidelineFull"></span>
+<div data-name="guidelineFull"></div>
 <button class="browse" aria-expanded="false">Browse</button>
 
 <div class="wcag-browser">
@@ -75,7 +75,7 @@
 
 <div class="menu"></div>
 
-<div class="text" aria-live="off"></div>
+<div class="text"></div>
 </div><!-- #wcag-browser -->
 
 </div><div class="field">
@@ -111,7 +111,10 @@
 const fieldNames = getFieldNames ($('#issues .create [data-name]'));
 const project = {};
 
-initializeWcagBrowser ($("#issues .create .wcag-browser"));
+initializeWcagBrowser (
+$("#issues .create .wcag-browser")
+, $("#issues .create [data-name=guidelineFull]")
+);
 initializeProject (project);
 $(project).on ("update", (e, data) => projectUpdated(e.target, data));
 
@@ -266,15 +269,15 @@ $("title").text ( $("#app .name").text() );
 
 /// wcag browser
 
-$("#issues .create .wcag-browser").on ("display", function (e, html) {
+$("#issues .create").on ("display", "[data-name=guidelineFull]", function (e, html) {
 var $html = $('<div></div>').html (html);
 var text = $html.find (".sc-handle").text ();
 var level = $html.text().match (/\(Level (A+)\)/);
-var levelText = (level)? `(${level[1]})` : "";
+var levelText = (level)? level[0] : "";
 
 $("#issues .create [data-name=guideline]").val (`${text} ${levelText}`);
-$("#issues .create [data-name=guidelineFull]").html (html);
-}); // display text in WCAG browser
+//$("#issues .create [data-name=guidelineFull]").html (html);
+}); // display full text in guideline field
 
 
 /// issues
@@ -423,7 +426,7 @@ var value;
 
 value  = $(element).is(":input")? $(element).val().trim()
 : $(element).html();
-debug (name, value);
+//debug (name, value);
 return {name: name, value: value};
 }); // map
 
@@ -485,7 +488,7 @@ setTimeout (() => $("#status").html("").text(message), 100);
 function checkValidity ($fields) {
 return $fields.get().filter(function (element) {
 var name = element.nodeName.toLowerCase();
-debug ("checking ", name);
+//debug ("checking ", name);
 if (
 (name === "input" || name === "textarea")
 && !element.validity.valid
