@@ -1,0 +1,13 @@
+{
+"name": "AccessibilityIssueCreator",
+"main": "issues.html",
+"babel": {
+"presets": ["latest"]
+},
+"scripts": {
+"build": "babel source --watch -o issues.compiled.js"
+},
+"devDependencies": {
+"babel-cli": "^6.0.0"
+}
+}
