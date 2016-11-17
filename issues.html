@@ -11,18 +11,9 @@
 </style>
 
 <script src="jquery.min.js"></script>
-<script src="lodash.js"></script>
-
-<script src="debug.js"></script>
-<script src="utilities.js"></script>
-
 <script src="hoverIntent.js"></script>
 <script src="superfish.min.js"></script>
-<script src="accessible-superfish.js"></script>
-
-<script src="import.js"></script>
-<script src="wcag-browser.js"></script>
-<script src="issueCreator.js"></script>
+<script src="issues.compiled.js"></script>
 </head>
 <body>
 <div id="app">
@@ -44,6 +35,7 @@
 <button class="save" accesskey="s">Save</button>
 <span class="file">
 <label>Choose file: <input hidden type="file" class="selector"></label>
+<label>(CSV) <input type="checkbox" class="csv"></label>
 <a class="download" href="#">Download</a>
 <button class="cancel">Cancel</button>
 </span>

@@ -37,13 +37,24 @@ return false;
 
 .on ("click", ".save", function (e) {
 if (project.name) {
-saveProject (project);
+$("#project .file").show()
+.find (".csv").focus();
 } else {
 statusMessage ("Need a project name.");
 $("#project .projectName").focus ();
 } // if
 return false;
 }) // save
+
+.on ("change", ".file .csv", function (e) {
+if (e.target.checked) {
+prepareCsv (project);
+} else {
+prepareJson (project.issues, project.fieldNames);
+} // if
+
+return true;
+})
 
 .on ("change", ".projectName", function (e) {
 project.name = $(e.target).val ();
@@ -125,14 +136,21 @@ function loadProject (project) {
 $("#project .file .selector").trigger ("click");
 } // loadProject
 
-function saveProject (project) {
+function prepareJson (project) {
 var url =  createBlob (project);
-$("#project .file").show ()
-.find (".download").attr ({
+$("#project .file .download").attr ({
 "href": url,
 "download": project.name + ".json"
-}).focus ();
-} // saveProject
+});
+} // prepareJson
+
+function prepareCsv (list, fields) {
+var url =  createBlob (toCsv(list, fields));
+$("#project .file .download").attr ({
+"href": url,
+"download": project.name + ".csv"
+});
+} // prepareCsv
 
 
 function update (object, data) {

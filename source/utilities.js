@@ -84,5 +84,17 @@ debug ("table: ", $("tr", $table).length);
 $table.appendTo ("body");
 */
 
+function toCsv (list, keys) {
+var result = "";
+result += JSON.stringify(keys).slice (1,-1) + "\n";
+
+list.forEach (function (object) {
+var values = _.unzip(objectToOrderedPairs(object, keys))[1]
+.map ((value) => String(value));
+result += JSON.stringify(values).slice (1,-1) + "\n";
+}); // forEach item in list
+
+return result;
+} // toCsv
 
 //alert ("utilities.js loaded");
