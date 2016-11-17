@@ -1,3 +1,4 @@
+"use strict";
 /* makeAccessible
   arguments:
  options,
@@ -49,24 +50,26 @@ var $ul;
 var $hasChildren, $li;
 
 // remove all implicit keyboard focus handlers (i.e. links and buttons should not be tabbable here since we're using aria-activedescendant to manage focus)
-$("a, button", $container).attr ("tabindex", "-1");
+$("a, button, input, textarea, select", $container).attr ("tabindex", "-1");
 //debug ("- implicit keyboard handling removed");
 
 // "ul" requires role="group"
 $ul = $("ul", $container).addBack()
 .attr ("role", options.role_group);
+debug ("$ul.length: ", $ul.length);
 
 // "li" are tree nodes and require role="treeitem"
-$li = $("li", $ul)
+$li = $("li", $container)
 .attr ({role: options.role_item}); 
+debug ("$li.length: ", $li.length);
 
 // add aria-expanded to nodes only if they are not leaf nodes
-$hasChildren = $li.has("ul");
+$hasChildren = $li.has ("ul");
+debug ("hasChildren.length: ", $hasChildren.length);
 $hasChildren.attr (options.state_expanded, "false");
 
 // unhide the top-level nodes and tell the container that the first node should have focus
 $ul.first().find("li").first()
-//.show ()
 .attr ({"id": activeDescendant_id});
 
 // replace role="group" with role="tree" on the first group and cause the tree to look for our currently active node
@@ -106,66 +109,75 @@ return false;
 // key not handled above, so let it keep its default action
 return true;
 } // keyboardHandler
- 
+
 
 // this function defines the actual keyboard behavior seen
-// add code to "open()" and "close()" functions to integrate with current implementation
 function navigate ($start, key) {
 //debugNode ($start, "navigate: ");
 if (! isValidNode($start)) return null;
 
 switch (key) {
-case 38: return previous (); // upArrow moves to previous sibling
-case 40: return next(); // downArrow moves to next sibling
+case 38: return previous ($start); // upArrow moves to previous sibling
+case 40: return next($start); // downArrow moves to next sibling
 
 // leftArrow moves up a level and closes
 case 37:
 if (options.beforeClose && options.beforeClose instanceof Function) options.beforeClose($start); 
-$start =  up();
- close();
- return $start;
+$start =  up($start);
+close($start);
+return $start;
 
 // rightArrow opens and moves down a level
-case 39: if (! isOpened()) open ();
-$start = down();
+case 39: if (! isOpened($start)) {
+$start = open ($start);
+$start = down($start);
 if (options.afterOpen && options.afterOpen instanceof Function) options.afterOpen ($start);
+} // if
 return $start;
 
 default: return null;
 } // switch
 
-function isOpened () {
-return $start && $start.length == 1 && $start.attr(options.state_expanded) == "true";
+function hasChildren ($node) {
+return $node.attr (options.state_expanded);
+} // hasChildren
+
+
+function isOpened ($node) {
+return isValidNode($node) && $node.attr(options.state_expanded) === "true";
 } // isOpened
 
-function open () {
-if (!isOpened()) {
-$start.attr (options.state_expanded, "true");
-if (options.open && options.open instanceof Function) options.open ($start);
+function open ($node) {
+if (hasChildren($node) && !isOpened($node)) {
+$node.attr (options.state_expanded, "true");
+if (options.open && options.open instanceof Function) options.open ($node);
 } // if
+
+return $node;
 } // open
 
-function close () {
-if (isOpened()) {
-$start.attr (options.state_expanded, "false");
-if (options.close && options.close instanceof Function) options.close($start);
+function close ($node) {
+if (isOpened($node)) {
+$node.attr (options.state_expanded, "false");
+if (options.close && options.close instanceof Function) options.close($node);
 } // if
+return $node;
 } // close
 
-function next () {
-return $start.next ("[role=" + options.role_item + "]");
+function next ($node) {
+return $node.next ("[role=" + options.role_item + "]");
 } // next
 
-function previous () {
-return $start.prev("[role=" + options.role_item + "]");
+function previous ($node) {
+return $node.prev("[role=" + options.role_item + "]");
 } // previous
 
-function up () {
-return $start.parent().closest("[role=" + options.role_item + "]");
+function up ($node) {
+return $node.parent().closest("[role=" + options.role_item + "]");
 } // up
 
-function down () {
-return $start.find("[role=" + options.role_item + "]:first");
+function down ($node) {
+return $node.find("[role=" + options.role_item + "]:first");
 } // down
 
 } // navigate
@@ -185,9 +197,8 @@ $node : null;
 
 function setCurrentNode ($newNode) {
 var $node = getCurrentNode ();
-if (
-isValidNode ($newNode)
-&& isValidNode ($node)) {
+
+if (isValidNode ($newNode) && isValidNode ($node)) {
 
 $node.removeAttr ("id");
 $newNode.attr ({"id": activeDescendant_id});
@@ -206,7 +217,6 @@ return null;
 function isValidNode ($node) {
 return ($node && $node.length == 1);
 } // isValidNode
-
 
 
 function debugNode ($node, label) {

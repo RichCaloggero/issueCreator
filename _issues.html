@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Accessibility Issue Creator</title>
+
+<link rel="stylesheet" href="css/superfish.css" media="screen">
+<style>
+#issue-create span {display: block;}
+#download-controls {display: none;}
+</style>
+
+<script src="jquery.min.js"></script>
+<script src="hoverIntent.js"></script>
+<script src="superfish.min.js"></script>
+
+<script src="debug.js"></script>
+<script src="import.js"></script>
+<script src="accessible-superfish.js"></script>
+<script src="wcag-browser.js"></script>
+
+</head>
+<body>
+<h1>Issues</h1>
+<div id="status" role="region" aria-label="Status" aria-live="polite">
+</div>
+
+<nav>
+<div>
+<label> Project name: <input type="text" id="projectName"></label>
+<button id="load" accesskey="l">Load Issues</button>
+<button id="save" accesskey="s">Save Issues</button>
+<span id="download-controls">
+<label>Filename: <input type="text" class="fileName"></label>
+<a class="download" href="#">Download</a>
+<button class="cancel">Cancel</button>
+</span>
+</div><div>
+<label>Select issue: <select id="issueSelector"></select></label>
+<button id="delete" accesskey="d">Delete</button>
+<button id="clear" accesskey="c">Clear (delete all)</button>
+</div>
+</nav>
+
+<main>
+
+<div id="wcag-browser">
+<h2>WCAG-2.0 Browser</h2>
+<nav>
+<label>Verbosity:
+<select id="verbosity">
+<option value="0">Principles</option>
+<option value="1">Guidelines</option>
+<option selected value="2">Criteria</option>
+<option value="3">Off</option>
+</select></label>
+
+<div id="menu-container">
+</div>
+</nav>
+
+<div id="text" aria-live="polite">
+</div>
+</div><!-- #wcag-browser -->
+
+<hr>
+
+<div id="issue-create" role="region">
+<h2>Create Issue</h2>
+
+<form>
+<span class="issue">
+<label>Title: <input type="text" data-name="title"></label>
+</span><span class="issue">
+<label>Guideline: <input type="text" data-name="guideline"></label>
+</span><span class="issue">
+<label>Priority: <input type="range" data-name="priority" min="1" max="5"></label>
+</span><span class="issue">
+<label>Full description <textarea data-name="long-description"></textarea></label>
+</span><span class="issue">
+<label>Code example: <textarea data-name="code-example"></textarea></label>
+</span>
+
+<input class="create" type="submit" value="Submit">
+</form>
+</div>
+
+<hr>
+
+<div id="issueDisplay" role="region">
+<label>Display as:<select class="type">
+<option value="table">Table</option>
+<option value="list">List</option>
+</select></label>
+<h2>Issues</h2>
+</div>
+
+</main>
+
+<div id="debug" aria-live="polite">
+</div>
+
+
+<script>
+var issueNumber = 0;
+var fieldNames = getFieldNames ($('#issue-create [data-name]'));
+var issues = [];
+
+statusMessage ("Ready.");
+if (localStorage) {
+if (localStorage.issues) {
+issues = JSON.parse(localStorage.issues)
+generateIssueDisplay (issues);
+generateIssueSelector (issues);
+statusMessage (`${issues.length} issues loaded.`);
+} // if
+
+} else {
+alert ("Local storage not available");
+} // if
+
+
+$("#issue-create").on ("submit", function (e) {
+issues.push (getIssueData ($("#issue-create [data-name]")));
+if (localStorage) localStorage.issues = JSON.stringify(issues);
+generateIssueDisplay (issues);
+generateIssueSelector (issues);
+statusMessage (`${issues.length} issues.`);
+
+return false;
+}); // create
+
+$("#issueDisplay .type").on ("change", function () {
+generateIssueDisplay (issues);
+statusMessage ("Display reset.");
+return true;
+});
+
+$("#issueSelector").on ("change", function () {
+var issue = issues[Number($(this).val())];
+setIssueData ($("#issue-create [data-name]"), issue);
+return true;
+});
+
+$("#clear").on ("click", function () {
+if (localStorage) localStorage.issues = [];
+issues = [];
+generateIssueDisplay (issues);
+statusMessage ("All issues deleted!");
+return false;
+});
+
+$("#load").on ("click", function (e) {
+var projectName = $("#projectName").val ();
+if (projectName) {
+$("#download-controls").show ()
+.find (".fileName").attr ({
+"type": "file",
+"value": projectName
+})
+.focus ();
+} // if
+
+
+}); // load
+
+$("#save").on ("click", function (e) {
+var url = createBlob (issues);
+var projectName = $("#projectName").val ();
+if (projectName) {
+$("#download-controls .download").attr ({
+"href": url,
+"download": projectName + ".json"
+});
+
+$("#download-controls").show ()
+.find (".download")
+.focus ();
+
+//$("#download-controls").show ()
+//.find (".fileName")
+//.val (projectName + ".json")
+//.focus ();
+
+} else {
+statusMessage ("Need a project name.");
+$("#projectName").focus ();
+} // if
+return false;
+}); // save
+
+$("#download-controls")
+/*.on ("focusout", ".fileName", function (e) {
+$("#download-controls .download").attr ("download", $(e.target).val());
+return true;
+})
+*/.on ("click", ".download", function (e) {
+var fileName = $(e.target).attr ("download");
+
+if (fileName) {
+$("#download-controls").hide ();
+return true;
+
+} else {
+statusMessage ("No file name given.");
+$("#download-controls .fileName").focus ();
+return false;
+} // if
+}).on ("click", ".cancel", function (e) {
+$("#save").focus ();
+$("#download-controls").hide ();
+}); // click .cancel
+
+
+function generateIssueDisplay (issues) {
+$("#issueDisplay table, #issueDisplay ol").remove ();
+createIssueDisplay (issues, $("#issueDisplay .type").val())
+.appendTo ("#issueDisplay");
+} // generateIssueDisplay
+
+function createIssueDisplay (issues, type) {
+if (type === "table") {
+return createIssueTable (issues);
+} else if (type === "list") {
+return createIssueList (issues);
+} else {
+alert (`createIssueDisplay: invalid type -- ${type}`);
+return null;
+} // if
+} // createIssueDisplay
+function createTableHeaders (fieldNames) {
+var $headers = $('<tr><th>Number</th></tr>');
+
+fieldNames.forEach ((name) => $headers.append (`<th>${name}</th>`));
+return $headers;
+} // createTableHeaders
+
+function createIssueTable (issues) {
+var $issues = $('<table><thead></thead><tbody></tbody></table>');
+$("thead", $issues).append (createTableHeaders (fieldNames));
+
+issues.forEach (function (issue, index) {
+var $issue = $(`<tr class="issue"><td>${index+1}</td></tr>`);
+
+issue.forEach (function (field) {
+var $field = $('<td></td>');
+$field.data ("name", field.name);
+$field.text (field.value);
+$issue.append ($field);
+}); // forEach issue
+
+$("tbody", $issues).append ($issue);
+}); // forEach issues
+
+return $issues;
+} // createIssueTable
+
+function createIssueList (issues) {
+var $issues = $('<ol></ol>');
+
+issues.forEach (function (issue, index) {
+var $issue = $(`<li class="issue"></li>`);
+
+issue.forEach (function (field) {
+var $field = $('<div></div>');
+$field.html (`
+<span class="name">${field.name}</span>
+<span class="value">${field.value}</span>
+`);
+$issue.append ($field);
+}); // forEach issue
+
+$issues.append ($issue);
+}); // forEach issues
+
+return $issues;
+} // createIssueList
+
+function getIssueData ($issue) {
+var issueData = [];
+
+issueData = $issue.get().map (function (element) {
+var name = $(element).data ("name");
+return {name: name.trim(), value: $(element).val().trim()};
+}); // map
+
+return issueData;
+} // getIssueData
+
+function setIssueData ($issue, data) {
+$issue.each (function (i, element) {
+$(this).val (data[i].value);
+}); // each
+} // setIssueData
+
+function generateIssueSelector (issues) {
+$("#issueSelector").empty()
+.append (createIssueSelector (issues));
+} // generateIssueSelector
+
+function createIssueSelector (issues) {
+var $options = $();
+getIssueField ("title", issues).forEach ((text, index) => $options = $options.add (`<option value=${index}>${text}</option>`))
+return $options;
+} // createIssueSelector
+
+function getIssueField (name, issues) {
+var names = issues.map (function (issue) {
+var value = issue.find (function (x) {
+//debug ("x: ", x);
+return x.name === name;
+}); // find
+
+//debug ("value: ", name, value);
+return (value)? value.value : "";
+});
+
+//debug ("fields: ", names);
+return names;
+} // getIssueField
+
+function createBlob (object) {
+var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
+return URL.createObjectURL(data);
+} // createBlob
+
+
+
+function statusMessage (message) {
+$("#status").html("").text(message);
+} // statusMessage
+
+</script>
+
+</body>
+</html>
