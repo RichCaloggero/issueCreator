@@ -1,5 +1,5 @@
 "use strict";
-function initializeWcagBrowser ($ui) {
+function initializeWcagBrowser ($ui, $display) {
 //debug ("--start--");
 
 // import data
@@ -19,7 +19,7 @@ html = tree2html (tree);
 $menuContainer.html (html);
 //debug ("html added");
 
-$(".menu > ul", $ui)
+$("ul:first", $menuContainer)
 .addClass ("sf-menu");
 
 // initialise plugin
@@ -36,12 +36,8 @@ open: function ($node) {
 $node.superfish("show");
 }, // open
 
-afterOpen: function ($node) {
-}, // afterOpen
-
 close: function ($node) {
-$node
-.superfish("hide");
+$node.superfish("hide");
 } // close
 
 }); // makeAccessible
@@ -53,7 +49,7 @@ var import_wcagData = $.get ("http://www.w3.org/TR/WCAG20/")
 alert (error.message);
 }).done (function (data) {
 //debug ("Guidelines loaded");
-
+$ui.trigger ("loaded");
 }); // ajax
 
 $.when (import_treeData, import_wcagData)
@@ -66,47 +62,57 @@ var selectors = [
 var $wcag = $('<div class="document" id="wcag-2.0"></div>').append (wcagData);
 var $guidelines = $wcag.find (".body .div1:first");
 var $tree = $(".sf-menu", $ui);
-var loc, text;
 
-loc = location($tree, getSelectedNode($tree));
-//debug (`loc: ${loc}`);
-text = extractText($guidelines, selectors, loc);
-//debug (`text: ${text}`);
-$ui.trigger ("loaded");
-display (text);
+display (getFullText(getSelectedNode ($tree)), $display);
 
 $tree.on ("selectNode", function (e) {
-var loc, text;
+display (getFullText($(e.target)), $display);
+return false;
+}); // selectNode
 
-//debug ();
-loc = location($tree, $(e.target));
+function getFullText (node) {
+var loc = location($tree, node);
 //debug (`loc: ${loc}`);
-text = extractText($guidelines, selectors, loc);
+var text = extractText($guidelines, selectors, loc);
 //debug (`text: ${text}`);
-display (text);
-});
+return text;
+} // getFullText
 
-function display (text) {
+function extractText ($doc, selectors, loc) {
+var index, selector, $nodes, $node;
+
+$node = $doc;
+for (var depth=0; depth<loc.length; depth++) {
+selector = selectors[depth];
+index = loc[depth];
+//debug (`- search: ${depth} ${index}`);
+$nodes = $node.find (selector[0]);
+$node = $nodes.eq(index);
+} // for
+
+return $node.find (selector[1]).html();
+} // extractText
+
+function display (text, $display) {
+var data = {html: text, verbosity: false};
 var loc = location($tree, getSelectedNode($tree));
-var $text = $(".text", $ui);
-
-if (loc.length-1 >= getVerbosity()) {
-$text.attr ("aria-live", "polite");
-} else {
-$text.attr ("aria-live", "off");
-} // if
+var $text = ($display && $display.length === 1)? 
+$display : $(".text", $ui);
+//debug ("display: ", $text.attr("data-name"));
+//debug ("verbosity: ", getVerbosity(), (loc.length)-1);
+data.verbosity = (loc.length) - 1 >= getVerbosity();
 
 setTimeout (function () {
-$text.html (text);
-$ui.trigger ("display", text);
-}, 200);
+//$text.html (text);
+$text.trigger ("display", data);
+}, 100);
 } // display
 
 function getVerbosity () {
 return $(".verbosity", $ui).val();
 } // getVerbosity
 
-
+return false;
 }); // when
 
 /// tree helpers
@@ -124,20 +130,6 @@ $node = $node.parent().closest ("[role=treeitem]", $tree);
 return loc.reverse();
 } // location
 
-function extractText ($doc, selectors, loc) {
-var index, selector, $nodes, $node;
-
-$node = $doc;
-for (var depth=0; depth<loc.length; depth++) {
-selector = selectors[depth];
-index = loc[depth];
-//debug (`- search: ${depth} ${index}`);
-$nodes = $node.find (selector[0]);
-$node = $nodes.eq(index);
-} // for
-
-return $node.find (selector[1]).html();
-} // extractText
 
 function getSelectedNode ($tree) {
 var id = $tree.attr("aria-activedescendant");
@@ -149,4 +141,4 @@ return $("#" + id, $tree);
 
 
 
-//alert ("wcag-browser.js loaded");
+alert ("wcag-browser.js loaded");
