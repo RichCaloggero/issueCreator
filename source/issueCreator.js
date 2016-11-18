@@ -99,6 +99,7 @@ $("#project .file").hide ();
 
 .on ("click", ".download", function (e) {
 $("#project .file").hide ();
+if (! $("#project .file .csv").prop("checked")) project.durty = false;
 return true;
 });
 
@@ -139,6 +140,7 @@ prepareCsv (project.issues, project.fieldNames);
 prepareJson (project);
 } // if
 
+return csv;
 } // prepareDownload
 
 function prepareJson (project) {
