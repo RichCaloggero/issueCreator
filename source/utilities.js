@@ -77,10 +77,10 @@ var issues = [{
 	code: "code2",
 	guideline: "2.1.1"
 }];
-debug ("issues: ", issues.length);
+//debug ("issues: ", issues.length);
 
 $table = createIssueTable (issues, ["guideline", "code", "title"]);
-debug ("table: ", $("tr", $table).length);
+//debug ("table: ", $("tr", $table).length);
 $table.appendTo ("body");
 */
 

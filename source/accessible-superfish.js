@@ -56,16 +56,16 @@ $("a, button, input, textarea, select", $container).attr ("tabindex", "-1");
 // "ul" requires role="group"
 $ul = $("ul", $container).addBack()
 .attr ("role", options.role_group);
-debug ("$ul.length: ", $ul.length);
+//debug ("$ul.length: ", $ul.length);
 
 // "li" are tree nodes and require role="treeitem"
 $li = $("li", $container)
 .attr ({role: options.role_item}); 
-debug ("$li.length: ", $li.length);
+//debug ("$li.length: ", $li.length);
 
 // add aria-expanded to nodes only if they are not leaf nodes
 $hasChildren = $li.has ("ul");
-debug ("hasChildren.length: ", $hasChildren.length);
+//debug ("hasChildren.length: ", $hasChildren.length);
 $hasChildren.attr (options.state_expanded, "false");
 
 // unhide the top-level nodes and tell the container that the first node should have focus

@@ -39,6 +39,7 @@ return false;
 if (project.name) {
 $("#project .file").show()
 .find (".csv").focus();
+prepareDownload ( $("#project .file .csv").prop ("checked"));
 } else {
 statusMessage ("Need a project name.");
 $("#project .projectName").focus ();
@@ -47,12 +48,7 @@ return false;
 }) // save
 
 .on ("change", ".file .csv", function (e) {
-if (e.target.checked) {
-prepareCsv (project);
-} else {
-prepareJson (project.issues, project.fieldNames);
-} // if
-
+prepareDownload (e.target.checked);
 return true;
 })
 
@@ -135,6 +131,15 @@ return project;
 function loadProject (project) {
 $("#project .file .selector").trigger ("click");
 } // loadProject
+
+function prepareDownload (csv) {
+if (csv) {
+prepareCsv (project.issues, project.fieldNames);
+} else {
+prepareJson (project);
+} // if
+
+} // prepareDownload
 
 function prepareJson (project) {
 var url =  createBlob (project);
@@ -361,7 +366,14 @@ return issues.map ((issue) => issue[name]);
 } // getIssueField
 
 function createBlob (object) {
-var data = new Blob ([JSON.stringify(object)], {type: "application/json"});
+var data;
+
+if (typeof(object) === "string" || object instanceof String) {
+data = new Blob ([object], {type: "application/json"});
+} else {
+data = new Blob ([JSON.stringify(object)], {type: "application/json"});
+} // if
+
 return URL.createObjectURL(data);
 } // createBlob
 
