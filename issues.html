@@ -7,11 +7,12 @@
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 <style>
 #issues .create .wcag-browser {display: none;}
+#issues .create .wcag-browser [role=tree]:focus {background: yellow; border: thin dotted;}
 #project .file {display: none;}
 </style>
 
 <script src="jquery.min.js"></script>
-<script src="hoverIntent.js"></script>
+<!--<script src="hoverIntent.js"></script>-->
 <script src="superfish.min.js"></script>
 <script src="issues.compiled.js"></script>
 </head>
@@ -82,8 +83,8 @@
 <label>Code example: <textarea data-name="code-example"></textarea></label>
 </div>
 
-<button class="add">Add</button>
-<button class="update">Update</button>
+<button class="add" accesskey="a">Add</button>
+<button class="update" accesskey="u">Update</button>
 </div>
 
 <hr>

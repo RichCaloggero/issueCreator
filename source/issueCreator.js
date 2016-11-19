@@ -397,6 +397,58 @@ if (
 ) return element;
 }); // map
 } // checkValidity
+
+
+/// keyboard help
+
+function createKeyboardHelp ($controls) {
+var $headerRow = '<tr><th>Action</th><th>Key</th></tr>\n';
+var $content;
+
+if (! $controls || $controls.length === 0) $controls = $("button[accesskey]");
+
+
+$content = $('<table></table>\n').append (
+$headerRow,
+$controls.map (function ($control) {
+var modifierString = "alt+shift";
+var action = $control.text();
+var key = $control.attr ("accesskey");
+return  $(`<tr><td class="action">${action}</td><td class="key">${key}</td></tr>`);
+}) // map
+); // append
+
+return createModal ("keyboardHelp", "Keyboard Help", $content);
+} // keyboardHelp
+
+function createModal (id, title, $content, description) {
+var id_title = `${id}-title`;
+var id_description = `${id}-description`;
+var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${id_title} aria-describedby=${id_description}"></div>`)
+.append (`
+<div class="modal-content" role="document">
+<div class="header">
+<h2 id="${id_title}">${title}</h2>
+<button class="close" aria-label="Close">X</button>
+</div>
+
+<div class="body">
+<p id="id_description">${description}</p>
+<div class="content"></div>
+</div><!-- body -->
+<div class="footer"></div>
+</div><!-- wrapper -->
+</div><!-- modal -->
+`);
+
+$(".content", $modal).append ($content);
+
+$modal.on ("click", ".close", () => $modal.hide());
+$modal.data ("trigger").focus ();
+
+return $modal;
+} // createModal
+
 }); // ready
 
 //alert ("issueCreator.js loaded");
