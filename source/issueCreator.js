@@ -7,6 +7,9 @@ initializeWcagBrowser ($("#issues .create .wcag-browser"));
 initializeProject (project);
 $(project).on ("update", (e, data) => projectUpdated(e.target, data));
 
+createKeyboardHelp ()
+.appendTo ("body")
+.data ("trigger", $(".toggleKeyboardHelp"));
 
 /// keyboard handling
 
@@ -15,8 +18,25 @@ if (e.keyCode === 13 || e.keyCode === 32) {
 $(e.target).trigger ("click");
 return false;
 } // if
-}); // synthesize clicks on buttons when pressing enter and spacebar
+}) // synthesize clicks on buttons when pressing enter and spacebar
 
+.on ("keydown", "#keyboardHelp.modal", function (e) {
+if (e.keyCode === 27) {
+closeKeyboardHelp();
+return false;
+} // if
+
+return true;
+});
+
+$(".toggleKeyboardHelp").on ("click", function () {
+if ($("#keyboardHelp").is (":visible")) {
+closeKeyboardHelp ();
+} else {
+openKeyboardHelp ();
+} // if
+return false;
+}); // toggle keyboard help
 
 /// projects
 
@@ -402,38 +422,41 @@ if (
 /// keyboard help
 
 function createKeyboardHelp ($controls) {
-var $headerRow = '<tr><th>Action</th><th>Key</th></tr>\n';
+var $headerRow = $('<tr><th>Action</th><th>Key</th></tr>\n');
 var $content;
 
 if (! $controls || $controls.length === 0) $controls = $("button[accesskey]");
+//debug (`controls: ${$controls.length}`);
 
 
 $content = $('<table></table>\n').append (
 $headerRow,
-$controls.map (function ($control) {
+$controls.map (function (index, control) {
 var modifierString = "alt+shift";
-var action = $control.text();
-var key = $control.attr ("accesskey");
-return  $(`<tr><td class="action">${action}</td><td class="key">${key}</td></tr>`);
+var action = $(control).text();
+var key = $(control).attr ("accesskey");
+//debug (`- ${action}, ${key}`);
+return  $(`<tr><td class="action">${action}</td><td class="key">${key}</td></tr>`)[0];
 }) // map
 ); // append
 
+//debug (`- modal: ${$content.html()}`);
 return createModal ("keyboardHelp", "Keyboard Help", $content);
 } // keyboardHelp
 
 function createModal (id, title, $content, description) {
 var id_title = `${id}-title`;
 var id_description = `${id}-description`;
-var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${id_title} aria-describedby=${id_description}"></div>`)
+var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${id_title}" aria-describedby="${id_description}"></div>`)
 .append (`
 <div class="modal-content" role="document">
 <div class="header">
 <h2 id="${id_title}">${title}</h2>
 <button class="close" aria-label="Close">X</button>
-</div>
+</div><!-- header -->
 
 <div class="body">
-<p id="id_description">${description}</p>
+<p id="${id_description}">${description}</p>
 <div class="content"></div>
 </div><!-- body -->
 <div class="footer"></div>
@@ -441,14 +464,29 @@ var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${i
 </div><!-- modal -->
 `);
 
-$(".content", $modal).append ($content);
+$(".body .content", $modal).append ($content);
+//debug (`modal: ${$modal.length}`);
 
-$modal.on ("click", ".close", () => $modal.hide());
-$modal.data ("trigger").focus ();
+$modal.on ("click", ".close", function () {
+var $focus = $modal.data? $modal.data("trigger") : $();
+$modal.hide();
+$focus.focus();
+return false;
+});
 
 return $modal;
 } // createModal
 
+function openKeyboardHelp () {
+$("#keyboardHelp").show().trigger ("open")
+.find (".close").focus();
+} // openKeyboardHelp
+
+function closeKeyboardHelp () {
+$("#keyboardHelp").hide().trigger ("close");
+$(".toggleKeyboardHelp").focus();
+} // closeKeyboardHelp
+
 }); // ready
 
-//alert ("issueCreator.js loaded");
+alert ("issueCreator.js loaded");

@@ -46,7 +46,7 @@ $node.superfish("hide");
 
 var import_wcagData = $.get ("http://www.w3.org/TR/WCAG20/")
 .fail (function (error) {
-alert (error.message);
+alert ("cannot get guideline data -- " + JSON.stringify(error));
 }).done (function (data) {
 //debug ("Guidelines loaded");
 $ui.trigger ("loaded");

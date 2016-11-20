@@ -5,7 +5,7 @@
 "presets": ["latest"]
 },
 "scripts": {
-"build": "babel source --watch -o issues.compiled.js"
+"build": "babel source --watch -o issues.compiled.js && echo done"
 },
 "devDependencies": {
 "babel-cli": "^6.0.0",
