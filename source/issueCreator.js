@@ -9,7 +9,10 @@ $(project).on ("update", (e, data) => projectUpdated(e.target, data));
 
 createKeyboardHelp ()
 .appendTo ("body")
-.data ("trigger", $(".toggleKeyboardHelp"));
+.on ("click", ".close", closeKeyboardHelp)
+.on ("focusout", ".close", (e) => {setTimeout (() => $(e.target).focus(), 0); return false;})
+.on ("keydown", (e) => (e.keyCode === 27)? (closeKeyboardHelp(), false) : true);
+
 
 /// keyboard handling
 
@@ -18,16 +21,8 @@ if (e.keyCode === 13 || e.keyCode === 32) {
 $(e.target).trigger ("click");
 return false;
 } // if
-}) // synthesize clicks on buttons when pressing enter and spacebar
+}); // synthesize clicks on buttons when pressing enter and spacebar
 
-.on ("keydown", "#keyboardHelp.modal", function (e) {
-if (e.keyCode === 27) {
-closeKeyboardHelp();
-return false;
-} // if
-
-return true;
-});
 
 $(".toggleKeyboardHelp").on ("click", function () {
 if ($("#keyboardHelp").is (":visible")) {
@@ -441,7 +436,7 @@ return  $(`<tr><td class="action">${action}</td><td class="key">${key}</td></tr>
 ); // append
 
 //debug (`- modal: ${$content.html()}`);
-return createModal ("keyboardHelp", "Keyboard Help", $content);
+return createModal ("keyboardHelp", "Keyboard Help", $content, "Below are the keyboard shortcuts used in this application:");
 } // keyboardHelp
 
 function createModal (id, title, $content, description) {
@@ -456,7 +451,7 @@ var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${i
 </div><!-- header -->
 
 <div class="body">
-<p id="${id_description}">${description}</p>
+<div id="${id_description}" class="description"></div>
 <div class="content"></div>
 </div><!-- body -->
 <div class="footer"></div>
@@ -464,15 +459,10 @@ var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${i
 </div><!-- modal -->
 `);
 
-$(".body .content", $modal).append ($content);
+if (description) $(".body .description", $modal).append (`<p>${description}</p>`);
+if ($content) $(".body .content", $modal).append ($content);
 //debug (`modal: ${$modal.length}`);
 
-$modal.on ("click", ".close", function () {
-var $focus = $modal.data? $modal.data("trigger") : $();
-$modal.hide();
-$focus.focus();
-return false;
-});
 
 return $modal;
 } // createModal
