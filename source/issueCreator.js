@@ -9,9 +9,7 @@ $(project).on ("update", (e, data) => projectUpdated(e.target, data));
 
 createKeyboardHelp ()
 .appendTo ("body")
-.on ("click", ".close", closeKeyboardHelp)
-.on ("focusout", ".close", (e) => {setTimeout (() => $(e.target).focus(), 0); return false;})
-.on ("keydown", (e) => (e.keyCode === 27)? (closeKeyboardHelp(), false) : true);
+.on ("focusout", ".close", (e) => {$(e.target).focus(); return false;});
 
 
 /// keyboard handling
@@ -22,8 +20,11 @@ if (e.keyCode === 13 || e.keyCode === 32) {
 $(e.target).trigger ("click");
 return false;
 } // if
-}); // synthesize clicks on buttons when pressing enter and spacebar
+}) // synthesize clicks on buttons when pressing enter and spacebar
 
+.on ("focusin", function () {
+if ($(".modal").is (":visible")) $(".modal:visible:first .close").focus ();
+});
 
 /// projects
 
