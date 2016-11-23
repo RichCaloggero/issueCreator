@@ -14,6 +14,7 @@
 <link rel="stylesheet" href="css/superfish.css" media="screen">
 
 <style>
+#issues .create .field {display: block;}
 #issues .create .wcag-browser [role=tree]:focus {background: yellow; border: thin dotted;}
 #project .file {display: none;}
 </style>
@@ -59,7 +60,26 @@
 
 <div class="field">
 <label>Title: <input type="text" data-name="title" required accesskey="t"></label>
-</div><div class="field">
+</div>
+
+<div class="field">
+<label for="priority">Priority:</label> <input type="range" id="priority" aria-describedby="priority-description" data-name="priority" min="1" max="5">
+<span id="priority-description">(number from 1 through 5)</span>
+</div><!-- priority field -->
+
+<div class="field">
+<label>Full description <textarea data-name="description" required></textarea></label>
+</div><!-- full description field -->
+
+<div class="field">
+<label>Screenshot: <input type="file" data-name="screenshot"></label>
+</div><!-- screenshot field -->
+
+<div class="field">
+<label>Code example: <textarea data-name="code-example"></textarea></label>
+</div><!-- code example field -->
+
+<div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
 <div data-name="guidelineFull"></div>
 <button type="button" class="browse btn btn-primary" aria-expanded="false" data-toggle="collapse" data-target="#issues .create .wcag-browser">Browse</button>
@@ -78,14 +98,7 @@
 
 <div class="text"></div>
 </div><!-- #wcag-browser -->
-
-</div><div class="field">
-<label>Priority: <input type="range" data-name="priority" min="1" max="5"> (number from 1 through 5)</label>
-</div><div class="field">
-<label>Full description <textarea data-name="description" required></textarea></label>
-</div><div class="field">
-<label>Code example: <textarea data-name="code-example"></textarea></label>
-</div>
+</div><!-- guideline field -->
 
 <button class="add" accesskey="a">Add</button>
 <button class="update" accesskey="u">Update</button>

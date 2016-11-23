@@ -11,6 +11,7 @@ createKeyboardHelp ()
 .appendTo ("body")
 .on ("focusout", ".close", (e) => {$(e.target).focus(); return false;});
 
+fixRangeInputs ();
 
 /// keyboard handling
 
@@ -467,16 +468,17 @@ $modal.on ("hidden.bs.modal", ".modal", function (e) {
 return $modal;
 } // createModal
 
-/*function openKeyboardHelp () {
-$("#keyboardHelp").show().trigger ("open")
-.find (".close").focus();
-} // openKeyboardHelp
+function fixRangeInputs () {
+$("input[type=range]").each (function () {
+var min = $(this).attr ("min") || 0;
+var max = $(this).attr ("max") || 100;
 
-function closeKeyboardHelp () {
-$("#keyboardHelp").hide().trigger ("close");
-$(".toggleKeyboardHelp").focus();
-} // closeKeyboardHelp
-*/
+$(this).before (`<span aria-hidden="true">${min}</span>`)
+.after (`<span aria-hidden="true">${max}</span>`);
+});
+
+} // fixRangeInputs
+
 
 }); // ready
 
