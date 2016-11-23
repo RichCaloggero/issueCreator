@@ -2,28 +2,25 @@
 <html lang="en">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta name="description" content="Create issues and save them as CSV">
+<meta name="author" content="Rich Caloggero">
 <title>Accessibility Issue Creator</title>
 
+<link rel="stylesheet" href="css/bootstrap.css" media="screen">
+
 <link rel="stylesheet" href="css/superfish.css" media="screen">
+
 <style>
-#issues .create .wcag-browser {display: none;}
 #issues .create .wcag-browser [role=tree]:focus {background: yellow; border: thin dotted;}
 #project .file {display: none;}
-#keyboardHelp {
-display: none; position: absolute; overflow: hidden; zindex:: 999;
-left: 12.5%; right: 12.5%;
-top: 12.5%; bottom: 12.5%;
-}
 </style>
 
-<script src="lodash.js"></script>
-<script src="jquery.min.js"></script>
-<!--<script src="hoverIntent.js"></script>-->
-<script src="superfish.min.js"></script>
-<script src="issues.compiled.js"></script>
 </head>
 <body>
-<div id="app">
+<div id="app" class="container">
 <h1 class="title">
 <span class="name">Accessibility Issue Creator</span>
 <span class="separator" style="display:none"> - </span>
@@ -31,12 +28,12 @@ top: 12.5%; bottom: 12.5%;
 </h1>
 </div><!-- #app -->
 
-<div id="status" role="region" aria-label="Status" aria-live="polite">
+<div id="status" class="container" role="region" aria-label="Status" aria-live="polite">
 </div>
 
-<main>
+<main class="container">
 <div id="project" role="region" aria-label="Project">
-<button class="toggleKeyboardHelp" aria-expanded="false">Keyboard Help</button>
+<button autofocus type="button" class="toggleKeyboardHelp btn btn-primary btn-lg" aria-expanded="false" data-toggle="modal" data-target="#keyboardHelp">Keyboard Help</button>
 <label> Project name: <input type="text" class="projectName"></label>
 <button class="new" accesskey="n">New</button>
 <button class="load" accesskey="l">Load</button>
@@ -65,9 +62,9 @@ top: 12.5%; bottom: 12.5%;
 </div><div class="field">
 <label>Guideline: <input type="text" data-name="guideline"></label>
 <div data-name="guidelineFull"></div>
-<button class="browse" aria-expanded="false">Browse</button>
+<button type="button" class="browse btn btn-primary" aria-expanded="false" data-toggle="collapse" data-target="#issues .create .wcag-browser">Browse</button>
 
-<div class="wcag-browser">
+<div class="wcag-browser collapse">
 <h2>WCAG-2.0 Browser</h2>
 <label>Verbosity:
 <select class="verbosity" size="1">
@@ -83,7 +80,7 @@ top: 12.5%; bottom: 12.5%;
 </div><!-- #wcag-browser -->
 
 </div><div class="field">
-<label>Priority: <input type="range" data-name="priority" min="1" max="5"></label>
+<label>Priority: <input type="range" data-name="priority" min="1" max="5"> (number from 1 through 5)</label>
 </div><div class="field">
 <label>Full description <textarea data-name="description" required></textarea></label>
 </div><div class="field">
@@ -111,6 +108,14 @@ top: 12.5%; bottom: 12.5%;
 </div>
 
 
+<script src="lodash.js"></script>
+<script src="jquery.min.js"></script>
+
+<script src="bootstrap.min.js"></script>
+
+<!--<script src="hoverIntent.js"></script>-->
+<script src="superfish.min.js"></script>
+<script src="issues.compiled.js"></script>
 
 </body>
 </html>

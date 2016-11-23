@@ -16,22 +16,14 @@ createKeyboardHelp ()
 
 /// keyboard handling
 
-$(document).on ("keydown", "button", function (e) {
+$(document)
+.on ("keydown", "button", function (e) {
 if (e.keyCode === 13 || e.keyCode === 32) {
 $(e.target).trigger ("click");
 return false;
 } // if
 }); // synthesize clicks on buttons when pressing enter and spacebar
 
-
-$(".toggleKeyboardHelp").on ("click", function () {
-if ($("#keyboardHelp").is (":visible")) {
-closeKeyboardHelp ();
-} else {
-openKeyboardHelp ();
-} // if
-return false;
-}); // toggle keyboard help
 
 /// projects
 
@@ -226,21 +218,14 @@ return false;
 statusMessage ("Guideline data loaded.");
 })
 
-.on ("click", ".create .browse", function (e) {
-var $browser = $("#issues .create .wcag-browser");
-var $browse = $(e.target);
+.on ("shown.bs.collapse", ".create .wcag-browser", function (e) {
+$("#issues .create .browse").attr ("aria-expanded", "true");
+$(".verbosity", e.target).focus ();
+})
 
-if ($browse.attr("aria-expanded") === "true") {
-$browser.hide ();
-$browse.attr ("aria-expanded", "false");
-} else if ($browse.attr ("aria-expanded") === "false") {
-$browser.show ()
-.find (".verbosity").focus ();
-$browse.attr ("aria-expanded", "true");
-} // if
-
-return true;
-}) // browse
+.on ("hidden.bs.collapse", ".create .wcag-browser", function (e) {
+$("#issues .create .browse").attr ("aria-expanded", "false");
+})
 
 .on ("click", ".delete", function (e) {
 var index = $("#issues .selector").val ();
@@ -442,32 +427,46 @@ return createModal ("keyboardHelp", "Keyboard Help", $content, "Below are the ke
 function createModal (id, title, $content, description) {
 var id_title = `${id}-title`;
 var id_description = `${id}-description`;
-var $modal = $(`<div id="${id}" class="modal" role="dialog" aria-labelledby="${id_title}" aria-describedby="${id_description}"></div>`)
-.append (`
-<div class="modal-content" role="document">
-<div class="header">
-<h2 id="${id_title}">${title}</h2>
-<button class="close" aria-label="Close">X</button>
-</div><!-- header -->
 
-<div class="body">
+var $modal =
+$(`<div class="modal" id="${id}"  role="dialog" aria-labelledby="${id_title}" aria-describedby="${id_description}"></div>`)
+.append (`
+<div class="modal-dialog" role="document">
+<div class="modal-content">
+<div class="modal-header">
+<h2 class="modal-title" id="${id_title}">${title}</h2>
+<button type="button" class="close" data-dismiss="modal" aria-label="Close">&times;</button>
+</div><!-- .modal-header -->
+
+<div class="modal-body">
 <div id="${id_description}" class="description"></div>
 <div class="content"></div>
-</div><!-- body -->
-<div class="footer"></div>
-</div><!-- wrapper -->
-</div><!-- modal -->
+</div><!-- .modal-body -->
+
+<div class="modal-footer"></div>
+
+</div><!-- .modal-content -->
+</div><!-- .modal-dialog -->
+</div><!-- .modal -->
 `);
 
-if (description) $(".body .description", $modal).append (`<p>${description}</p>`);
-if ($content) $(".body .content", $modal).append ($content);
+if (description) $(".modal-body .description", $modal).append (`<p>${description}</p>`);
+if ($content) $(".modal-body .content", $modal).append ($content);
 //debug (`modal: ${$modal.length}`);
 
+// the following focuses on the close button rather than bootstraps default of focusing on the .modal itself
+$modal.on ("shown.bs.modal", function (e) {
+$(".close", $modal ).focus ();
+}); // focus modals when they open
+
+$modal.on ("hidden.bs.modal", ".modal", function (e) {
+//$modal.data ("trigger").focus();
+}); // focus on the modal's trigger
 
 return $modal;
 } // createModal
 
-function openKeyboardHelp () {
+/*function openKeyboardHelp () {
 $("#keyboardHelp").show().trigger ("open")
 .find (".close").focus();
 } // openKeyboardHelp
@@ -476,7 +475,8 @@ function closeKeyboardHelp () {
 $("#keyboardHelp").hide().trigger ("close");
 $(".toggleKeyboardHelp").focus();
 } // closeKeyboardHelp
+*/
 
 }); // ready
 
-alert ("issueCreator.js loaded");
+//alert ("issueCreator.js loaded");
