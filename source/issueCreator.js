@@ -71,6 +71,7 @@ return true;
 var fileSelector = e.target;
 var file = fileSelector.files[0];
 var reader = null;
+var type = $(fileSelector).data("type");
 
 //debug (`event ${e.type}`);
 
@@ -82,9 +83,16 @@ return false;
 //debug(`file: ${file.size} ${file.name}`);
 
 reader = new FileReader ();
-reader.readAsText (file);
+reader[type] (file);
 
 $(reader).on ("load", function () {
+if (type === "readAsText") {
+getProjectData ();
+} else if (type === "readAsDataURL") {
+getScreenshotData ();
+} // if
+
+function getProjectData () {
 var newProject = reader.result;
 
 try {
@@ -97,6 +105,12 @@ update (project, {message: "loaded"});
 } catch (e) {
 statusMessage (`${e} -- cannot parse file.`);
 } // try
+} // getProjectData
+
+function getScreenshotData () {
+var imageData = reader.result;
+$("#issues .create [data-name=screenshot]").attr ("src", imageData);
+} // getScreenshotData
 }); // file.load
 return true;
 }) // change .file .selector
@@ -139,7 +153,7 @@ return project;
 } // initializeProject
 
 function loadProject (project) {
-$("#project .file .selector").trigger ("click");
+$("#project .file .selector").data("type", "readAsText").trigger ("click");
 } // loadProject
 
 function prepareDownload (csv) {
@@ -215,6 +229,10 @@ return false;
 updateIssue ($("#issues .create [data-name]"), $("#issues .selector").val());
 return false;
 }) // update existing issue
+
+.on ("click", ".create .getScreenshot", function () {
+$("#project .file .selector").data("type", "readAsDataURL").trigger ("click");
+})
 
 .on ("loaded", ".create .wcag-browser", function () {
 statusMessage ("Guideline data loaded.");
