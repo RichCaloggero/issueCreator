@@ -1,27 +1,20 @@
 "use strict";
 
+function getData (element, method) {
+return method (element);	
+} // getData
 
-
-function getData ($elements, method) {
-	return $elements.get().map ((element) => $(element)[method] ());
-	} // getData
-
-function setData ($elements, data, method) {
-	$elements.each (function (index, element) {
-		var value = (data instanceof Array)? data[index] : data[getFieldName($(element))];
-		$(element)[method] (value);
-	}); // each
-
-return $elements;
+function setData (element, value, method) {
+return method (element) (value);
 } // setData
 
 function createEmptyElements (elementName, count = 1) {
 	var $elements = $();
 	for (var i=0; i<count; i++) {
-	$elements = $elements.add ( $(`<${elementName}></${elementName}>`) );
-} // for
-
-return $elements;
+		$elements = $elements.add ( $(`<${elementName}></${elementName}>`) );
+	} // for
+	
+	return $elements;
 } // createEmptyElements
 
 function issueToObject ($fields) {
@@ -30,33 +23,29 @@ function issueToObject ($fields) {
 	); // pairsToObject
 } // issueToObject
 
-function setIssueData (object, $fields) {
-	var fieldNames = getFieldNames ($fields);
-	return setData ($fields, objectToOrderedPairs(object, fieldNames), "val");
-	} // setIssueData
-
-
-function get ($field, key) {
-	return $field.data(key);
-} // get
-
-function set ($field, key, value) {
-	return $field.data (key, value);
-} // set
-
 function getFieldName ($field) {
 	return get($field, "name");
 } // getFieldName
 
+function get ($field, key) {
+return $field.data(key);
+} // get
+
+function set ($field, key, value) {
+return $field.data(key, value);
+} // set
+
+
 function getFieldNames ($fields) {
 	return $fields.get().map ((element) => getFieldName($(element)));
-	} // getFieldNames
+} // getFieldNames
+
 
 function objectToOrderedPairs (object, keys) {
 	if (! object) return [];
 	if (! keys || keys.length === 0) keys = Object.keys(object);
 	return keys.map ((key) => [key, object[key]]);
-	} // objectToOrderedPairs 
+} // objectToOrderedPairs 
 
 function pairsToObject (pairs) {
 	var object;

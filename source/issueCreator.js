@@ -221,12 +221,13 @@ $("title").text ( $("#app .name").text() );
 
 $("#issues")
 .on ("click", ".create .add", function (e) {
-updateIssue ($("#issues .create [data-name]"));
+updateIssue ();
+debug ("issues: ", project.issues);
 return false;
 }) // create new issue
 
 .on ("click", ".create .update", function (e) {
-updateIssue ($("#issues .create [data-name]"), $("#issues .selector").val());
+updateIssue ($("#issues .selector").val());
 return false;
 }) // update existing issue
 
@@ -272,7 +273,7 @@ var issue;
 
 if (index >= 0) {
 issue = project.issues[index];
-setIssueData ($("#issues .create [data-name]"), issue);
+setIssueData (issue);
 } // if
 return true;
 })
@@ -300,20 +301,24 @@ $full.html (data.html);
 
 // helpers
 
-function updateIssue ($issue, index = -1) {
-var invalid = checkValidity($("#issues .create [data-name]").not ("[data-name=guidelineFull]"));
+function updateIssue (index = -1) {
+//var invalid = checkValidity(getIssueFields().not ("[data-name=guideline-fullText]"));
 
-if (invalid.length > 0) {
+/*if (invalid.length > 0) {
 statusMessage ("Invalid issue; please correct and resubmit.");
 invalid[0].focus ();
 return false;
 } // if
+*/
 
 if (index < 0) index = project.issues.length;
-project.issues[index] = _.zipObject (project.fieldNames, getIssueData ($("#issues .create [data-name]")));
+project.issues[index] = _.zipObject (project.fieldNames, getIssueData ());
+debug ("fieldNames: ", project.fieldNames);
+debug ("issueData: ", getIssueData());
 project.durty = true;
 update (project);
 } // updateIssue
+
 
 function generateIssueDisplay (issues) {
 $("#issues .display table, #issues .display ol").remove ();
@@ -354,22 +359,50 @@ function createIssueTable (issues, fieldNames) {
 	issues.map (	function (issue, index) {
 		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, fieldNames))[1]);
 		return createEmptyElements ("tr").addClass ("issue")
-		.append (setData (createEmptyElements("td", project.fieldNames.length), fieldValues, "text"));
+		.append (setContent(createEmptyElements("td", project.fieldNames.length), fieldValues));
 	}) // map
 	); // append
 
 	function createTableHeaders (fieldNames) {
-	return setData (createEmptyElements ("th", fieldNames.length), fieldNames, "text");
+	return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
 	} // createTableHeaders
+
+function setContent ($elements, data) {
+return $elements.get().map ((index, element) => {$(element).text (data[index]); return element;});
+} // setContent
+
 } // createIssueTable
 
-function getIssueData ($issue) {
-return getData ($issue, "val");
+function getIssueData ($issue = getIssueFields()) {
+return $issue.get().map ((element) => issueField(element) ());
 } // getIssueData
 
-function setIssueData ($issue, data) {
-return setData ($issue, data, "val");
+function setIssueData (data, $issue = getIssueFields()) {
+return $issue.get().forEach (function (element, index) {
+var name = getFieldName ($(element));
+var value = (data instanceof Array)? data[index] : data[name];
+issueField(element) (value);
+}); // forEach
 } // setIssueData
+
+function getIssueFields () {
+return $("#issues .create [data-name]");
+} // getIssueFields
+
+function issueField (element) {
+var name = getFieldName ($(element));
+var $element = $(element);
+//debug ("issueField: ", name);
+
+switch (name) {
+case "screenshot": return _.bind($element.attr, $element, "src");
+
+case "guideline-fullText": return _.bind($element.html, $element);
+
+default: return _.bind($element.val, $element);
+} // switch
+
+} // issueField
 
 function generateIssueSelector (issues) {
 $("#issues .selector").empty()
