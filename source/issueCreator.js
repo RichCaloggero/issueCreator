@@ -222,7 +222,6 @@ $("title").text ( $("#app .name").text() );
 $("#issues")
 .on ("click", ".create .add", function (e) {
 updateIssue ();
-debug ("issues: ", project.issues);
 return false;
 }) // create new issue
 
@@ -302,19 +301,16 @@ $full.html (data.html);
 // helpers
 
 function updateIssue (index = -1) {
-//var invalid = checkValidity(getIssueFields().not ("[data-name=guideline-fullText]"));
+var invalid = checkValidity(getIssueFields().filter ("input"));
 
-/*if (invalid.length > 0) {
+if (invalid.length > 0) {
 statusMessage ("Invalid issue; please correct and resubmit.");
 invalid[0].focus ();
 return false;
 } // if
-*/
 
 if (index < 0) index = project.issues.length;
 project.issues[index] = _.zipObject (project.fieldNames, getIssueData ());
-debug ("fieldNames: ", project.fieldNames);
-debug ("issueData: ", getIssueData());
 project.durty = true;
 update (project);
 } // updateIssue
