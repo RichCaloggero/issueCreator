@@ -312,6 +312,7 @@ return false;
 if (index < 0) index = project.issues.length;
 project.issues[index] = _.zipObject (project.fieldNames, getIssueData ());
 project.durty = true;
+project.currentIssue = index;
 update (project);
 } // updateIssue
 
@@ -364,20 +365,20 @@ function createIssueTable (issues, fieldNames) {
 	} // createTableHeaders
 
 function setContent ($elements, data) {
-return $elements.get().map ((index, element) => {$(element).text (data[index]); return element;});
+return $elements.map ((index, element) => {$(element).text (data[index]); return element;});
 } // setContent
 
 } // createIssueTable
 
 function getIssueData ($issue = getIssueFields()) {
-return $issue.get().map ((element) => issueField(element) ());
+return $issue.get().map ((element) => issueFieldAccessor (element) ());
 } // getIssueData
 
 function setIssueData (data, $issue = getIssueFields()) {
 return $issue.get().forEach (function (element, index) {
 var name = getFieldName ($(element));
 var value = (data instanceof Array)? data[index] : data[name];
-issueField(element) (value);
+issueFieldAccessor (element) (value);
 }); // forEach
 } // setIssueData
 
@@ -385,7 +386,7 @@ function getIssueFields () {
 return $("#issues .create [data-name]");
 } // getIssueFields
 
-function issueField (element) {
+function issueFieldAccessor (element) {
 var name = getFieldName ($(element));
 var $element = $(element);
 //debug ("issueField: ", name);
@@ -398,19 +399,20 @@ case "guideline-fullText": return _.bind($element.html, $element);
 default: return _.bind($element.val, $element);
 } // switch
 
-} // issueField
+} // issueFieldAccess
 
 function generateIssueSelector (issues) {
 $("#issues .selector").empty()
-.append (createIssueSelector (issues));
-} // generateIssueSelector
+.append (createOptions (issues));
+$("#issues .selector").val (project.currentIssue);
 
-function createIssueSelector (issues) {
+function createOptions (issues) {
 var $options = $('<option value="-1">[none]</option>');
 getIssueField ("title", issues)
 .forEach ((text, index) => $options = $options.add (`<option value=${index}>${text}</option>`))
 return $options;
 } // createIssueSelector
+} // generateIssueSelector
 
 function getIssueField (name, issues) {
 return issues.map ((issue) => issue[name]);

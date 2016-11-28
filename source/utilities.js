@@ -1,12 +1,5 @@
 "use strict";
 
-function getData (element, method) {
-return method (element);	
-} // getData
-
-function setData (element, value, method) {
-return method (element) (value);
-} // setData
 
 function createEmptyElements (elementName, count = 1) {
 	var $elements = $();
@@ -17,11 +10,6 @@ function createEmptyElements (elementName, count = 1) {
 	return $elements;
 } // createEmptyElements
 
-function issueToObject ($fields) {
-	return pairsToObject (
-	_.zip (getFieldNames($fields), getData($fields, "val"))
-	); // pairsToObject
-} // issueToObject
 
 function getFieldName ($field) {
 	return get($field, "name");
@@ -46,12 +34,6 @@ function objectToOrderedPairs (object, keys) {
 	if (! keys || keys.length === 0) keys = Object.keys(object);
 	return keys.map ((key) => [key, object[key]]);
 } // objectToOrderedPairs 
-
-function pairsToObject (pairs) {
-	var object;
-	pairs.forEach ((pair) => object[pair[0]] = pair[1]);
-	return object;
-	} // pairsToObject 
 
 
 /// tests
