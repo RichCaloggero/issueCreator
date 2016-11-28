@@ -6,7 +6,6 @@ initializeWcagBrowser ($("#issues .create .wcag-browser"));
 
 $(project).on ("update", (e, data) => projectUpdated(e.target, data));
 initializeProject (project);
-fixRangeInputs ();
 
 
 /// keyboard handling

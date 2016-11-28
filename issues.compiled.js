@@ -398,7 +398,6 @@ $(document).ready(function () {
 		return projectUpdated(e.target, data);
 	});
 	initializeProject(project);
-	fixRangeInputs();
 
 	/// keyboard handling
 
@@ -891,30 +890,6 @@ $(document).ready(function () {
 }); // ready
 
 //alert ("issueCreator.js loaded");
-"use strict";
-
-function toCsv(list, keys) {
-	var result = "";
-	result += JSON.stringify(keys).slice(1, -1) + "\n";
-
-	list.forEach(function (object) {
-		var values = _.unzip(objectToOrderedPairs(object, keys))[1].map(function (value) {
-			return String(value);
-		});
-		debug("values: ", values);
-		result += JSON.stringify(values).slice(1, -1) + "\n";
-	}); // forEach item in list
-
-	return result;
-} // toCsv
-
-/// test
-
-var list = [{
-	a: 1, b: 2, c: 3
-}, {
-	a: 4, b: 5, c: 6
-}];
 "use strict";
 
 function createEmptyElements(elementName) {
