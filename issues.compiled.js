@@ -394,15 +394,10 @@ $(document).ready(function () {
 
 	initializeWcagBrowser($("#issues .create .wcag-browser"));
 
-	initializeProject(project);
 	$(project).on("update", function (e, data) {
 		return projectUpdated(e.target, data);
 	});
-
-	createKeyboardHelp().appendTo("body").on("focusout", ".close", function (e) {
-		$(e.target).focus();return false;
-	});
-
+	initializeProject(project);
 	fixRangeInputs();
 
 	/// keyboard handling
@@ -416,6 +411,10 @@ $(document).ready(function () {
 
 	.on("focusin", function () {
 		if ($(".modal").is(":visible")) $(".modal:visible:first .close").focus();
+	});
+
+	createKeyboardHelp().appendTo("body").on("focusout", ".close", function (e) {
+		$(e.target).focus();return false;
 	});
 
 	/// projects
@@ -515,10 +514,13 @@ $(document).ready(function () {
 	// helpers
 
 	function initializeProject(project, clearLocalStorage) {
+		var restoredProject, message;
+		// we use assign here because project is const
 		Object.assign(project, {
-			fieldNames: getFieldNames($('#issues .create [data-name]')),
+			fieldNames: getFieldNames(getIssueFields()),
 			name: "",
 			issues: [],
+			currentIssue: -1,
 			durty: false
 		});
 
@@ -526,13 +528,20 @@ $(document).ready(function () {
 			if (clearLocalStorage) {
 				localStorage.project = null;
 			} else if (localStorage.project) {
-				project = JSON.parse(localStorage.project);
+				restoredProject = JSON.parse(localStorage.project);
+				Object.assign(project, restoredProject);
+				message = "loaded from local storage";
 			} // if
 		} else {
 			alert("Local storage not available, so save often!");
 		} // if
 
-		statusMessage("Ready.");
+		update(project, {
+			message: message || "Ready.",
+			focusOnSelector: project.issues.length > 0,
+			save: false // don't want to re-save
+		});
+
 		return project;
 	} // initializeProject
 
@@ -568,14 +577,15 @@ $(document).ready(function () {
 
 
 	function update(object, data) {
-		data = Object.assign({ displayStatus: true, message: "" }, data);
+		data = Object.assign({ displayStatus: true, message: "", save: true }, data);
 		$(object).trigger("update", data);
 	} // update
 
 	function projectUpdated(project, data) {
-		var message = message ? " " + data.message : "";
-		if (localStorage) {
+		var message = data.message ? " " + data.message : "";
+		if (localStorage && data.save) {
 			localStorage.project = JSON.stringify(project);
+			alert("saved in local storage");
 		} // if
 
 		$("#project .projectName").val(project.name);
@@ -583,6 +593,9 @@ $(document).ready(function () {
 		generateIssueDisplay(project.issues);
 
 		if (data.displayStatus) statusMessage(project.issues.length + " issues" + message + ".");
+		if (data.focusOnSelector) setTimeout(function () {
+			return $("#issues .selector").focus();
+		}, 100);
 	} // projectUpdated
 
 	function updateAppTitle(name) {
@@ -613,7 +626,7 @@ $(document).ready(function () {
 	.on("click", ".create .getScreenshot", function () {
 		$("#project .file .selector").data("type", "readAsDataURL").trigger("click");
 	}).on("loaded", ".create .wcag-browser", function () {
-		statusMessage("Guideline data loaded.");
+		$("#issues .create [data-name='guideline-fullText']").html("");
 	}).on("shown.bs.collapse", ".create .wcag-browser", function (e) {
 		$("#issues .create .browse").attr("aria-expanded", "true");
 		$(".verbosity", e.target).focus();
@@ -637,16 +650,14 @@ $(document).ready(function () {
 		return true;
 	}).on("change", ".selector", function () {
 		var index = Number($(this).val());
-		var issue;
 
 		if (index >= 0) {
-			issue = project.issues[index];
-			setIssueData(issue);
+			setIssueData(project.issues[index]);
 		} // if
 		return true;
 	}).on("display", ".create .wcag-browser", function (e, data) {
 		var $short = $("#issues .create [data-name=guideline]");
-		var $full = $("#issues .create [data-name=guidelineFull]");
+		var $full = $("#issues .create [data-name=guideline-fullText]");
 		var $html = $('<div></div>').html(data.html);
 		var text = $html.find(".sc-handle").text();
 		var level = $html.text().match(/\(Level (A+)\)/);
@@ -772,12 +783,14 @@ $(document).ready(function () {
 	function generateIssueSelector(issues) {
 		$("#issues .selector").empty().append(createOptions(issues));
 		$("#issues .selector").val(project.currentIssue);
+		//if (project.currentIssue >= 0) setIssueData (project.issues[project.currentIssue]);
 
 		function createOptions(issues) {
 			var $options = $('<option value="-1">[none]</option>');
 			getIssueField("title", issues).forEach(function (text, index) {
-				return $options = $options.add("<option value=" + index + ">" + text + "</option>");
-			});
+				$options = $options.add("<option value=" + index + ">" + text + "</option>");
+			}); // forEach
+
 			return $options;
 		} // createIssueSelector
 	} // generateIssueSelector
