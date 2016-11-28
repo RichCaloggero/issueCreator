@@ -584,7 +584,6 @@ $(document).ready(function () {
 		var message = data.message ? " " + data.message : "";
 		if (localStorage && data.save) {
 			localStorage.project = JSON.stringify(project);
-			alert("saved in local storage");
 		} // if
 
 		$("#project .projectName").val(project.name);
