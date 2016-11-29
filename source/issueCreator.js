@@ -108,7 +108,8 @@ statusMessage (`${e} -- cannot parse file.`);
 
 function getScreenshotData () {
 var imageData = reader.result;
-$("#issues .create [data-name=screenshot]").attr ("src", imageData);
+$("#issues .create [data-name=screenshot] img").attr ("src", imageData);
+statusMessage ("Screenshot loaded.");
 } // getScreenshotData
 }); // file.load
 return true;
@@ -359,21 +360,29 @@ function createIssueList ($issues, fieldNames) {
 } // createIssueList
 
 function createIssueTable (issues, fieldNames) {
-	return createEmptyElements ("table").append (
-	createEmptyElements("tr").append (createTableHeaders (["number"].concat (fieldNames))),
-	issues.map (	function (issue, index) {
-		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, fieldNames))[1]);
-		return createEmptyElements ("tr").addClass ("issue")
+	return $("<table></table>").append (
+	$("<thead></thead>").append (
+$("<tr></tr>").append (createTableHeaders (["number"].concat (fieldNames))),
+), // append thead
+	
+$("<tbody></tbody>").append (
+issues.map (	function (issue, index) {
+		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, project.fieldNames))[1]);
+		return $("<tr class='issue'></tr>")
 		.append (setContent(createEmptyElements("td", project.fieldNames.length), fieldValues));
 	}) // map
-	); // append
+	) // append tbody
+); // append
 
 	function createTableHeaders (fieldNames) {
 	return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
 	} // createTableHeaders
 
 function setContent ($elements, data) {
-return $elements.map ((index, element) => {$(element).text (data[index]); return element;});
+return $elements.map (function (index, element) {
+$(element).html (data[index]);
+return element;
+}); // map
 } // setContent
 
 } // createIssueTable
@@ -394,20 +403,20 @@ function getIssueFields () {
 return $("#issues .create [data-name]");
 } // getIssueFields
 
-function issueFieldAccessor (element) {
+function issueFieldAccessor (element, value) {
 var name = getFieldName ($(element));
 var $element = $(element);
 //debug ("issueField: ", name);
 
 switch (name) {
-case "screenshot": return _.bind($element.attr, $element, "src");
+//case "screenshot": return _.bind($element.attr, $element, "src");
 
-case "guideline-fullText": return _.bind($element.html, $element);
+case "screenshot" || "guideline-fullText": return _.bind($element.html, $element);
 
 default: return _.bind($element.val, $element);
 } // switch
 
-} // issueFieldAccess
+} // issueFieldAccessor
 
 function generateIssueSelector (issues) {
 $("#issues .selector").empty()
