@@ -35,6 +35,8 @@ branch: "li",
 state_expanded: "aria-expanded"
 }; // defaults
 
+var activeDescendant_id = options.name + "-activeDescendant";
+
 if (arguments.length == 1) {
 options = $.extend (options, arguments[0]);
 } else if (arguments.length == 2) {
@@ -43,7 +45,6 @@ options = $.extend (options, {$container: $container, name: name});
 options = $.extend (options, {$container: $container, name: name}, arguments[2]);
 } // if
 
-var activeDescendant_id = options.name + "-activeDescendant";
 //debug ("makeAccessible:", options);
 
 return addKeyboardNavigation (addAria (options.$container));
@@ -53,8 +54,7 @@ function addAria ($container) {
 Keyboard-navigable JavaScript widgets - Accessibility | MDN
 https://developer.mozilla.org/en-US/docs/Web/Accessibility/Keyboard-navigable_JavaScript_widgets
 */
-var $ul;
-var $hasChildren, $li;
+var $groups, $branches, $hasChildren;
 
 // remove all implicit keyboard focus handlers (i.e. links and buttons should not be tabbable here since we're using aria-activedescendant to manage focus)
 $("a, button, [tabindex]", $container).attr ("tabindex", "-1");
