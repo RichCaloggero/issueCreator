@@ -27,8 +27,8 @@ $menu = $(".sf-menu", $ui).superfish({
 //add options here if required
 });
 
-makeAccessible ($menu, "a11y-", {
-flow: true,
+treeWalker($menu, "a11y-", {
+flow: false,
 
 currentNode: function ($node) {
 $node.trigger ("selectNode");

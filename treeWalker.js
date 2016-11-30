@@ -1,5 +1,4 @@
-"use strict";
-/* makeAccessible
+/* treeWalker
   arguments:
  options,
  or container, name, options
@@ -7,24 +6,32 @@
 
   This function adds aria tree markup to the superfish menu structure, as well as keyboard navigation.
   Options:
-  - open: called when a node is opened with node as argument;
+- root: root node,
+- open: called when a node is opened with node as argument;
   - close: called when a node is closed, with node as an argument
   - beforeOpen: called before open with node as an argument
+  
+  - group: selects grouping items (default "ul")
+  - role_group: role to attach to grouping items (default "group")
   - role_root: role of root element (default: "tree")
-  - role_group: role of grouping element (default: "group")
-  - role_item: role of branch (default: "treeitem")
-  - state_expanded: indicates expanded branch (default: "aria-expanded")
+
+  - branch: selects branches (default "li")
+  - role_branch: role to attach to branches (default "treeitem")
+
+- state_expanded: indicates expanded branch (default: "aria-expanded")
 
 ***  note: if open and close functions are not supplied, this function will have no effect; the open and close functions should generally show / hide nodes, respectively.
 */
 
-function makeAccessible ($container, name) {
+function treeWalker($container, name) {
 // defaults
 var options = {
 open: function(){}, close: function(){},
 role_root: "tree",
 role_group: "group",
-role_item: "treeitem",
+role_branch: "treeitem",
+group: "ul",
+branch: "li",
 state_expanded: "aria-expanded"
 }; // defaults
 
@@ -36,7 +43,7 @@ options = $.extend (options, {$container: $container, name: name});
 options = $.extend (options, {$container: $container, name: name}, arguments[2]);
 } // if
 
-var activeDescendant_id = options.name + "activeDescendant";
+var activeDescendant_id = options.name + "-activeDescendant";
 //debug ("makeAccessible:", options);
 
 return addKeyboardNavigation (addAria (options.$container));
@@ -50,30 +57,26 @@ var $ul;
 var $hasChildren, $li;
 
 // remove all implicit keyboard focus handlers (i.e. links and buttons should not be tabbable here since we're using aria-activedescendant to manage focus)
-$("a, button, input, textarea, select", $container).attr ("tabindex", "-1");
+$("a, button, [tabindex]", $container).attr ("tabindex", "-1");
 //debug ("- implicit keyboard handling removed");
 
-// "ul" requires role="group"
-$ul = $("ul", $container).addBack()
+$groups = $(options.group, $container).addBack()
 .attr ("role", options.role_group);
-//debug ("$ul.length: ", $ul.length);
 
-// "li" are tree nodes and require role="treeitem"
-$li = $("li", $container)
-.attr ({role: options.role_item}); 
-//debug ("$li.length: ", $li.length);
+$branches = $(options.branch, $groups)
+.attr ({role: options.role_branch}); 
 
 // add aria-expanded to nodes only if they are not leaf nodes
-$hasChildren = $li.has ("ul");
-//debug ("hasChildren.length: ", $hasChildren.length);
+$hasChildren = $branches.has(options.group);
 $hasChildren.attr (options.state_expanded, "false");
 
 // unhide the top-level nodes and tell the container that the first node should have focus
-$ul.first().find("li").first()
+$groups.first().find(options.branch).first()
+//.show ()
 .attr ({"id": activeDescendant_id});
 
 // replace role="group" with role="tree" on the first group and cause the tree to look for our currently active node
-$ul.first()
+$groups.first()
 .attr({
 "role": options.role_root,
 "tabindex": "0",
@@ -208,11 +211,11 @@ return $next;
 } // next
 
 function down ($node) {
-return $node.find("[role=" + options.role_item + "]:first");
+return $node.find("[role=" + options.role_branch + "]:first");
 } // down
 
 function up ($node) {
-return $node.parent().closest("[role=" + options.role_item + "]");
+return $node.parent().closest("[role=" + options.role_branch + "]");
 } // up
 
 } // navigate
@@ -265,7 +268,7 @@ return info;
 
 } // addKeyboardNavigation
 
-} // makeAccessible
+} // treeWalker
 
 /*function debug (text) {
 //return;
@@ -288,5 +291,5 @@ console.error (text);
 } // debug
 */
 
-//alert ("makeAccessible loaded");
+//alert ("treeWalker.js loaded");
 
