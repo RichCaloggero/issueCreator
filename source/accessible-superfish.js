@@ -86,17 +86,23 @@ return $container;
 function addKeyboardNavigation ($container) {
 
 // add keyboard handler
-$container.on ("keydown", keyboardHandler);
+$container.on ("keydown click", interactionHandler);
 return $container;
 
-function keyboardHandler (e) {
-var key = e.which || e.keyCode;
+function interactionHandler (e) {
+var key = (e.type === "keydown")? e.which || e.keyCode : "click";
 var $newNode = null;
 var $currentNode = getCurrentNode();
+var actions = {
+click: "toggle",
+"38": "previous", "40": "next",
+"37": "up", "39": "down"
+};
 
-if (key >= 35 && key <= 40) {
+if (key !== "click" && (key > 40 || key < 35)) return true;
+
 //debug ("key: " + key);
-$newNode = navigate (getCurrentNode(), key);
+$newNode = navigate ($currentNode, actions[String(key)]);
 
 if (isValidNode($newNode) && $newNode !== $currentNode) {
 //debugNode ($newNode, "navigate: ");
@@ -104,44 +110,59 @@ if (options.leaveNode && options.leaveNode instanceof Function) options.leaveNod
 setCurrentNode ($newNode);
 } // if
 return false;
-} // if
 
-// key not handled above, so let it keep its default action
-return true;
-} // keyboardHandler
+} // interactionHandler
 
 
-// this function defines the actual keyboard behavior seen
-function navigate ($start, key) {
+function navigate ($start, operation) {
 //debugNode ($start, "navigate: ");
 if (! isValidNode($start)) return null;
 
-switch (key) {
-case 38: return previous ($start); // upArrow moves to previous sibling
-case 40: return next($start); // downArrow moves to next sibling
+switch (operation) {
+case "previous": return previous ($start, options.flow);
 
-// leftArrow moves up a level and closes
-case 37:
+case "next": return next ($start, options.flow);
+
+case "up":
 if (options.beforeClose && options.beforeClose instanceof Function) options.beforeClose($start); 
-$start =  up($start);
+
+/*if (options.flow) {
+if (isOpened ($start)) {
 close($start);
 return $start;
-
-// rightArrow opens and moves down a level
-case 39: if (! isOpened($start)) {
-$start = open ($start);
-$start = down($start);
-if (options.afterOpen && options.afterOpen instanceof Function) options.afterOpen ($start);
 } // if
+return up($start);
+
+} else {
+*/
+close($start);
+return up($start);
+//} // if
+
+case "down": 
+/*if (options.flow) {
+if (isOpened ($start)) {
+return down($start);
+} // if
+open ($start);
 return $start;
+
+} else {
+*/
+open ($start);
+return down ($start);
+//} // if
 
 default: return null;
 } // switch
 
 function hasChildren ($node) {
-return $node.attr (options.state_expanded);
+return !isLeafNode ($node);
 } // hasChildren
 
+function isLeafNode ($node) {
+return !$node.is(`[${options.state_expanded}]`);
+} // isLeafNode
 
 function isOpened ($node) {
 return isValidNode($node) && $node.attr(options.state_expanded) === "true";
@@ -164,21 +185,35 @@ if (options.close && options.close instanceof Function) options.close($node);
 return $node;
 } // close
 
-function next ($node) {
-return $node.next ("[role=" + options.role_item + "]");
-} // next
+function previous ($node, flow) {
+var $parent = up($node);
+var $previous = $node.prev ();
+if (! flow) return $previous;
 
-function previous ($node) {
-return $node.prev("[role=" + options.role_item + "]");
+if (isValidNode($previous) && !isLeafNode($previous) && isOpened($previous)) return down ($previous).nextAll().last();
+
+if (! isValidNode($previous) && isValidNode($parent) && isOpened($parent)) return $parent;
+return $previous;
 } // previous
 
-function up ($node) {
-return $node.parent().closest("[role=" + options.role_item + "]");
-} // up
+function next ($node, flow) {
+var $parent = up($node);
+var $next = $node.next ();
+if (! flow) return $next;
+
+if (!isLeafNode($node) && isOpened($node)) return down ($node);
+
+if (! isValidNode($next) && isValidNode($parent) && isOpened($parent)) return next($parent);
+return $next;
+} // next
 
 function down ($node) {
 return $node.find("[role=" + options.role_item + "]:first");
 } // down
+
+function up ($node) {
+return $node.parent().closest("[role=" + options.role_item + "]");
+} // up
 
 } // navigate
 
@@ -215,7 +250,7 @@ return null;
 } // setCurrentNode
 
 function isValidNode ($node) {
-return ($node && $node.length == 1);
+return ($node && $node.length === 1);
 } // isValidNode
 
 

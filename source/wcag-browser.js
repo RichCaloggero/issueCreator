@@ -28,6 +28,8 @@ $menu = $(".sf-menu", $ui).superfish({
 });
 
 makeAccessible ($menu, "a11y-", {
+flow: true,
+
 currentNode: function ($node) {
 $node.trigger ("selectNode");
 },
