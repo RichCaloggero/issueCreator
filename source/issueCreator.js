@@ -201,6 +201,7 @@ $(object).trigger ("update", data);
 function projectUpdated (project, data) {
 var message = (data.message)?
 " " + data.message : "";
+
 if (localStorage && data.save) {
 localStorage.project = JSON.stringify (project);
 } // if
@@ -330,7 +331,7 @@ function generateIssueDisplay (issues) {
 $("#issues .display table, #issues .display ol").remove ();
 createIssueDisplay (issues, $("#issues .display .type").val())
 .appendTo ("#issues .display");
-generateIssueSelector (issues);
+generateIssueSelector (issues, project.currentIssue);
 } // generateIssueDisplay
 
 function createIssueDisplay (issues, type) {
@@ -344,14 +345,13 @@ return null;
 } // if
 } // createIssueDisplay
 
-function createIssueList ($issues, fieldNames) {
+function createIssueList (issues, fieldNames) {
 	return createEmptyElements ("ol").append (
 	issues.map (function (issue) {
 		return createEmptyElements ("li").addClass ("issue").append (
 		objectToOrderedPairs(issue, fieldNames).map (function (field) {
 			return $(`
-<div><span>${field[0]} : ${field[1]}</span></div>
-<hr>
+<div>${field[0]} : ${field[1]}</div>
 `);
 			}) // map over fields
 		); // append

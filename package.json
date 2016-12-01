@@ -1,11 +1,12 @@
 {
-"name": "AccessibilityIssueCreator",
-"main": "issues.html",
+"name": "issueCreator",
+"main": "issueCreator.html",
 "babel": {
 "presets": ["latest"]
 },
 "scripts": {
-"build": "babel source --watch -o issues.compiled.js && echo done"
+"build": "babel source --watch -o issueCreator.js",
+"release": "babel source -o issueCreator.js"
 },
 "devDependencies": {
 "babel-cli": "^6.0.0",
