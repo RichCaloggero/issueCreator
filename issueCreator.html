@@ -16,7 +16,7 @@
 <style>
 #issues .create .field {display: block;}
 #issues .create .wcag-browser [role=tree]:focus {background: yellow; border: thin dotted;}
-#issues .create [data-name=screenshot] img {width: 20px; height: 32;}
+img.screenshot {width: 300px; height: 256px;}
 
 #project .file {display: none;}
 </style>
@@ -75,11 +75,11 @@
 
 <div class="field">
 <button class="getScreenshot">Browse for screenshot</button>
-<span data-name="screenshot"><img src="" alt="screenshot"></span>
+<span data-name="screenshot"><img class="screenshot" src="" alt="screenshot"></span>
 </div><!-- screenshot field -->
 
 <div class="field">
-<label>Code example: <textarea data-name="code-example"></textarea></label>
+<label>Code example: <textarea data-name="code-example" data-markdown="true"></textarea></label>
 </div><!-- code example field -->
 
 <div class="field">
@@ -128,6 +128,7 @@
 
 <script src="import/lodash.min.js"></script>
 <script src="import/jquery.min.js"></script>
+<script src="import/markd.min.js"></script>
 
 <script src="import/bootstrap.min.js"></script>
 

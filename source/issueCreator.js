@@ -367,9 +367,9 @@ $("<tr></tr>").append (createTableHeaders (["number"].concat (fieldNames))),
 	
 $("<tbody></tbody>").append (
 issues.map (	function (issue, index) {
-		var fieldValues = [index+1].concat (_.unzip(objectToOrderedPairs(issue, project.fieldNames))[1]);
+		var pairs = ["number", index+1].concat (objectToOrderedPairs(issue, project.fieldNames));
 		return $("<tr class='issue'></tr>")
-		.append (setContent(createEmptyElements("td", project.fieldNames.length), fieldValues));
+		.append (setContent(createEmptyElements("td", pairs.length), pairs));
 	}) // map
 	) // append tbody
 ); // append
@@ -378,9 +378,21 @@ issues.map (	function (issue, index) {
 	return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
 	} // createTableHeaders
 
-function setContent ($elements, data) {
+	function setContent ($elements, pairs) {
 return $elements.map (function (index, element) {
-$(element).html (data[index]);
+var markdown = null;
+	var $field = null;
+	var pair = pairs[index];
+	
+	if (index > 0) {
+$field = $(`#issues .create [data-name="${pair[0]}"]`);
+markdown = $field.data ("markdown");
+	debug ("setContent: ", pair[0], markdown);
+} // if
+	var value = pair[1];
+if (markdown) value = markd(value);
+	
+	$(element).html (value);
 return element;
 }); // map
 } // setContent
