@@ -5,8 +5,8 @@
 "presets": ["latest"]
 },
 "scripts": {
-"build": "babel source --watch -o issueCreator.js",
-"release": "babel source -o issueCreator.js"
+"build": "babel source --watch -o issueCreator.compiled.js",
+"release": "babel source -o issueCreator.compiled.js"
 },
 "devDependencies": {
 "babel-cli": "^6.0.0",

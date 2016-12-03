@@ -360,39 +360,45 @@ function createIssueList (issues, fieldNames) {
 } // createIssueList
 
 function createIssueTable (issues, fieldNames) {
-	return $("<table></table>").append (
-	$("<thead></thead>").append (
+return $("<table></table>").append (
+$("<thead></thead>").append (
 $("<tr></tr>").append (createTableHeaders (["number"].concat (fieldNames))),
 ), // append thead
-	
+
 $("<tbody></tbody>").append (
 issues.map (	function (issue, index) {
-		var pairs = ["number", index+1].concat (objectToOrderedPairs(issue, project.fieldNames));
-		return $("<tr class='issue'></tr>")
-		.append (setContent(createEmptyElements("td", pairs.length), pairs));
-	}) // map
-	) // append tbody
+var pairs = [["number", index+1]].concat (objectToOrderedPairs(issue, project.fieldNames));
+return $("<tr class='issue'></tr>")
+.append (setContent(createEmptyElements("td", pairs.length), pairs));
+}) // map
+) // append tbody
 ); // append
 
-	function createTableHeaders (fieldNames) {
-	return setContent (createEmptyElements ("th", fieldNames.length), fieldNames);
-	} // createTableHeaders
+function createTableHeaders (data) {
+return setContent (createEmptyElements ("th", data.length), data);
+} // createTableHeaders
 
-	function setContent ($elements, pairs) {
+function setContent ($elements, data) {
+//debug ("setContent data: ", data);
 return $elements.map (function (index, element) {
-var markdown = null;
-	var $field = null;
-	var pair = pairs[index];
-	
-	if (index > 0) {
-$field = $(`#issues .create [data-name="${pair[0]}"]`);
-markdown = $field.data ("markdown");
-	debug ("setContent: ", pair[0], markdown);
+var markdown = false;
+var $field = null;
+var value = data[index], pair = null, name = "";
+
+if (value instanceof Array) {
+pair = value;
+value = pair[1];
+name = pair[0];
 } // if
-	var value = pair[1];
-if (markdown) value = markd(value);
-	
-	$(element).html (value);
+
+if (pair && index > 0) {
+$field = $(`#issues .create [data-name="${name}"]`);
+markdown = $field.data ("markdown");
+debug ("setContent: ", pair[0], markdown);
+} // if
+
+if (markdown) value = marked(value);
+$(element).html (value);
 return element;
 }); // map
 } // setContent
