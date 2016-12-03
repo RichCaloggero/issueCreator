@@ -26,6 +26,7 @@
 function treeWalker($container, name) {
 // defaults
 var options = {
+name: "treeWalker",
 open: function(){}, close: function(){},
 role_root: "tree",
 role_group: "group",
