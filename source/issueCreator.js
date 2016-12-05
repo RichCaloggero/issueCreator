@@ -394,7 +394,7 @@ name = pair[0];
 if (pair && index > 0) {
 $field = $(`#issues .create [data-name="${name}"]`);
 markdown = $field.data ("markdown");
-debug ("setContent: ", pair[0], markdown);
+//debug ("setContent: ", pair[0], markdown);
 } // if
 
 if (markdown) value = marked(value);

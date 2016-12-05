@@ -94,24 +94,28 @@ $container.on ("keydown click", interactionHandler);
 return $container;
 
 function interactionHandler (e) {
-var key = (e.type === "keydown")? e.which || e.keyCode : "click";
+var action = (e.type === "keydown")? (e.which || e.keyCode) : "click";
 var $newNode = null;
 var $currentNode = getCurrentNode();
 var actions = {
-click: "toggle",
+click: "click",
+13: "click", 32: "click",
+
 "38": "previous", "40": "next",
 "37": "up", "39": "down"
 };
 
-if (key !== "click" && (key > 40 || key < 35)) return true;
+if (! (action in actions)) return true;
 
-//debug ("key: " + key);
-$newNode = navigate ($currentNode, actions[String(key)]);
+//debug ("action: ", action);
+$newNode = navigate ($currentNode, actions[String(action)]);
 
-if (isValidNode($newNode) && $newNode !== $currentNode) {
+if (isValidNode($newNode)) {
 //debugNode ($newNode, "navigate: ");
+if (action === "click" || $newNode !== $currentNode) {
 if (options.leaveNode && options.leaveNode instanceof Function) options.leaveNode ($currentNode, $newNode);
 setCurrentNode ($newNode);
+} // if
 } // if
 return false;
 
@@ -121,6 +125,18 @@ return false;
 function navigate ($start, operation) {
 //debugNode ($start, "navigate: ");
 if (! isValidNode($start)) return null;
+//debug ("navigate: ", operation);
+
+if (operation === "click") {
+if (isLeafNode ($start)) {
+return ($start);
+} // if
+
+if (!isOpened($start)) $start = open($start);
+else $start = close ($start);
+return $start;
+} // if
+if (options.noArrowKeyNavigation) return $start;
 
 switch (operation) {
 case "previous": return previous ($start, options.flow);
@@ -128,34 +144,18 @@ case "previous": return previous ($start, options.flow);
 case "next": return next ($start, options.flow);
 
 case "up":
-if (options.beforeClose && options.beforeClose instanceof Function) options.beforeClose($start); 
-
-/*if (options.flow) {
-if (isOpened ($start)) {
-close($start);
-return $start;
-} // if
-return up($start);
-
+if (options.flow) {
+$start = close($start);
+$start = up($start);
 } else {
-*/
-close($start);
-return up($start);
-//} // if
+$start = up($start);
+$start = close($start);
+} // if
+return $start;
 
 case "down": 
-/*if (options.flow) {
-if (isOpened ($start)) {
-return down($start);
-} // if
-open ($start);
-return $start;
-
-} else {
-*/
-open ($start);
-return down ($start);
-//} // if
+$start = open ($start);
+return $start = down ($start);
 
 default: return null;
 } // switch
@@ -182,10 +182,12 @@ return $node;
 } // open
 
 function close ($node) {
+if (options.beforeClose && options.beforeClose instanceof Function) options.beforeClose($node); 
 if (isOpened($node)) {
 $node.attr (options.state_expanded, "false");
 if (options.close && options.close instanceof Function) options.close($node);
 } // if
+
 return $node;
 } // close
 

@@ -28,6 +28,7 @@ $menu = $(".sf-menu", $ui).superfish({
 });
 
 treeWalker($menu, "a11y-", {
+noArrowKeyNavigation: false,
 flow: false,
 
 currentNode: function ($node) {
