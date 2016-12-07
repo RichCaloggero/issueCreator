@@ -11,20 +11,22 @@ initializeProject (project);
 /// keyboard handling
 
 $(document)
-.on ("keydown", "button", function (e) {
+.on ("keydown", "button, [role=tree]", function (e) {
 if (e.keyCode === 13 || e.keyCode === 32) {
 $(e.target).trigger ("click");
 return false;
 } // if
-}) // synthesize clicks on buttons when pressing enter and spacebar
+}); // synthesize clicks on buttons when pressing enter and spacebar
 
-.on ("focusin", function () {
-if ($(".modal").is (":visible")) $(".modal:visible:first .close").focus ();
-});
 
 createKeyboardHelp ()
-.appendTo ("body")
-.on ("focusout", ".close", (e) => {$(e.target).focus(); return false;});
+.appendTo ("body");
+
+$("#keyboardHelp").on ("focusout", function (e) {
+debug ("focusout...");
+$(e.target).focus();
+return false;
+});
 
 /// projects
 
@@ -549,12 +551,10 @@ $modal.on ("shown.bs.modal", function (e) {
 $(".close", $modal ).focus ();
 }); // focus modals when they open
 
-$modal.on ("hidden.bs.modal", ".modal", function (e) {
-//$modal.data ("trigger").focus();
-}); // focus on the modal's trigger
 
 return $modal;
 } // createModal
+
 
 function fixRangeInputs () {
 $("input[type=range]").each (function () {

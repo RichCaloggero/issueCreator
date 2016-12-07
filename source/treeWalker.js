@@ -1,3 +1,4 @@
+"use strict";
 /* treeWalker
   arguments:
  options,
@@ -90,7 +91,15 @@ return $container;
 function addKeyboardNavigation ($container) {
 
 // add keyboard handler
-$container.on ("keydown click", interactionHandler);
+$container.on ("keydown", interactionHandler)
+.on ("mouseenter", `[role=${options.role_branch}]`, function (e) {
+var $node = $(e.target).closest (`[role=${options.role_branch}]`);
+//debug ("entering ", e.target.nodeName, $node.children().first().text());
+
+if ($node[0] !== getCurrentNode()[0]) setCurrentNode ($node);
+return true;
+});
+
 return $container;
 
 function interactionHandler (e) {
@@ -98,7 +107,7 @@ var action = (e.type === "keydown")? (e.which || e.keyCode) : "click";
 var $newNode = null;
 var $currentNode = getCurrentNode();
 var actions = {
-click: "click",
+//click: "click",
 13: "click", 32: "click",
 
 "38": "previous", "40": "next",
@@ -136,7 +145,8 @@ if (!isOpened($start)) $start = open($start);
 else $start = close ($start);
 return $start;
 } // if
-if (options.noArrowKeyNavigation) return $start;
+
+if (options.noArrowKeyNavigation) return null;
 
 switch (operation) {
 case "previous": return previous ($start, options.flow);
