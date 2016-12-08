@@ -89,12 +89,14 @@ return $container;
 } // addAria
 
 function addKeyboardNavigation ($container) {
+var branchSelector = `[role=${options.role_branch}]`;
 
 // add keyboard handler
 $container.on ("keydown", interactionHandler)
-.on ("mouseenter", `[role=${options.role_branch}]`, function (e) {
-var $node = $(e.target).closest (`[role=${options.role_branch}]`);
-//debug ("entering ", e.target.nodeName, $node.children().first().text());
+.on ("mouseenter", branchSelector, function (e) {
+// mouseenter delivers events to the "a" elements so find containing branch
+var $node = $(e.target).closest (branchSelector);
+//debugNode ($node, "mouseEnter");
 
 if ($node[0] !== getCurrentNode()[0]) setCurrentNode ($node);
 return true;
@@ -268,7 +270,6 @@ return null;
 function isValidNode ($node) {
 return ($node && $node.length === 1);
 } // isValidNode
-
 
 function debugNode ($node, label) {
 //return;
