@@ -202,11 +202,16 @@ return $node;
 } // close
 
 function previous ($node, flow) {
+var $result;
 var $parent = up($node);
 var $previous = $node.prev ();
 if (! flow) return $previous;
 
-if (isValidNode($previous) && !isLeafNode($previous) && isOpened($previous)) return down ($previous).nextAll().last();
+if (isValidNode($previous) && !isLeafNode($previous) && isOpened($previous)) {
+$result = down ($previous);
+if ($result.nextAll().length > 0) $result = $result.nextAll().last();
+return $result;
+} // if
 
 if (! isValidNode($previous) && isValidNode($parent) && isOpened($parent)) return $parent;
 return $previous;
