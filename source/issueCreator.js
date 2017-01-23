@@ -377,8 +377,20 @@ return $("<tr class='issue'></tr>")
 ); // append
 
 function createTableHeaders (data) {
+var th = d3.selectAll("th")
+.data (data);
+
+th.exit().remove;;
+	
+th.enter().append ("th")
+.text (function(d) {return d;})
+.merge (th);
+} // createTableHeaders
+
+/*function createTableHeaders (data) {
 return setContent (createEmptyElements ("th", data.length), data);
 } // createTableHeaders
+*/
 
 function setContent ($elements, data) {
 //debug ("setContent data: ", data);

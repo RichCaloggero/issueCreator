@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta http-equiv="X-UA-Compatible" content="IE=edge">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+<meta name="description" content="Create issues and save them as CSV">
+<meta name="author" content="Rich Caloggero">
+<title>D3 Test</title>
+</head>
+<body>
+<h1>D3 Test</h1>
+
+<div id="display">
+</div>
+
+
+<script src="../import/d3.min.js"></script>
+<script>
+var columnTitles = ["a", "b", "c", "d"];
+var data = [
+[1,2,3,4],
+[5,6,7,8],
+[9,10,11,12]
+];
+
+tabulate ("#display", data, columnTitles);
+
+function tabulate(parent, data, columns) {
+var table = d3.select(parent).append("table");
+var tHead = table.append('thead');
+var	tBody = table.append('tbody');
+var tr_head, tr_body, th, td;
+
+// append the header row
+tr_head = tHead.append("tr")
+.selectAll("th")
+.data(columns);
+tr_head.enter()
+.append("th")
+.text(function (title) { return title;});
+
+// create a row for each object in the data
+tr_body = tBody.selectAll('tr')
+.data(data);
+alert(tr_body.enter().size() + " " + tr_body.size());
+
+tr_body = tr_body.enter()
+.append("tr");
+
+// create a cell in each row for each column
+td = tr_body.selectAll("td")
+.data(function (d) {return d;});
+alert(td.enter().size() + " " + td.size());
+
+td.enter()
+.append("td")
+.text(function (d, i) { return d; });
+
+return table;
+} // tabulate
+
+</script>
+
+</body>
+</html>
