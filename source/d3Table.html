@@ -25,9 +25,12 @@ var data = [
 [9,10,11,12]
 ];
 
-tabulate ("#display", data, columnTitles);
+createTable ("#display",
+data.map((r, i) => [i+1].concat(r)),
+["ID"].concat (columnTitles)
+);
 
-function tabulate(parent, data, columns) {
+function createTable (parent, data, columnTitles) {
 var table = d3.select(parent).append("table");
 var tHead = table.append('thead');
 var	tBody = table.append('tbody');
@@ -36,7 +39,8 @@ var tr_head, tr_body, th, td;
 // append the header row
 tr_head = tHead.append("tr")
 .selectAll("th")
-.data(columns);
+.data(columnTitles);
+tr_head.exit().remove();
 tr_head.enter()
 .append("th")
 .text(function (title) { return title;});
@@ -44,22 +48,22 @@ tr_head.enter()
 // create a row for each object in the data
 tr_body = tBody.selectAll('tr')
 .data(data);
-alert(tr_body.enter().size() + " " + tr_body.size());
 
+tr_body.exit().remove();
 tr_body = tr_body.enter()
 .append("tr");
 
 // create a cell in each row for each column
 td = tr_body.selectAll("td")
-.data(function (d) {return d;});
-alert(td.enter().size() + " " + td.size());
+.data(function (d,i) {return d;});
 
+td.exit().remove();
 td.enter()
 .append("td")
 .text(function (d, i) { return d; });
 
 return table;
-} // tabulate
+} // createTable
 
 </script>
 

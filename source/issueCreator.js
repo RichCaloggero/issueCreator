@@ -343,7 +343,7 @@ return createIssueTable (issues, project.fieldNames);
 return createIssueList (issues, project.fieldNames);
 } else {
 alert (`createIssueDisplay: invalid type -- ${type}`);
-return null;
+return $();
 } // if
 } // createIssueDisplay
 
@@ -362,62 +362,47 @@ function createIssueList (issues, fieldNames) {
 } // createIssueList
 
 function createIssueTable (issues, fieldNames) {
-return $("<table></table>").append (
-$("<thead></thead>").append (
-$("<tr></tr>").append (createTableHeaders (["number"].concat (fieldNames))),
-), // append thead
-
-$("<tbody></tbody>").append (
-issues.map (	function (issue, index) {
-var pairs = [["number", index+1]].concat (objectToOrderedPairs(issue, project.fieldNames));
-return $("<tr class='issue'></tr>")
-.append (setContent(createEmptyElements("td", pairs.length), pairs));
-}) // map
-) // append tbody
-); // append
-
-function createTableHeaders (data) {
-var th = d3.selectAll("th")
-.data (data);
-
-th.exit().remove;;
-	
-th.enter().append ("th")
-.text (function(d) {return d;})
-.merge (th);
-} // createTableHeaders
-
-/*function createTableHeaders (data) {
-return setContent (createEmptyElements ("th", data.length), data);
-} // createTableHeaders
-*/
-
-function setContent ($elements, data) {
-//debug ("setContent data: ", data);
-return $elements.map (function (index, element) {
-var markdown = false;
-var $field = null;
-var value = data[index], pair = null, name = "";
-
-if (value instanceof Array) {
-pair = value;
-value = pair[1];
-name = pair[0];
-} // if
-
-if (pair && index > 0) {
-$field = $(`#issues .create [data-name="${name}"]`);
-markdown = $field.data ("markdown");
-//debug ("setContent: ", pair[0], markdown);
-} // if
-
-if (markdown) value = marked(value);
-$(element).html (value);
-return element;
-}); // map
-} // setContent
-
+return $(createTable (
+issues.map((r, i) => [i+1].concat(r)),
+["ID"].concat (fieldNames)
+));
 } // createIssueTable
+
+function createTable (data, columnTitles) {
+var _table = document.createElement ("table");
+var table = d3.select(_table);
+var tHead = table.append('thead');
+var	tBody = table.append('tbody');
+var tr_head, tr_body, th, td;
+
+// append the header row
+tr_head = tHead.append("tr")
+.selectAll("th")
+.data(columnTitles);
+tr_head.exit().remove();
+tr_head.enter()
+.append("th")
+.text(function (title) { return title;});
+
+// create a row for each object in the data
+tr_body = tBody.selectAll('tr')
+.data(data);
+
+tr_body.exit().remove();
+tr_body = tr_body.enter()
+.append("tr");
+
+// create a cell in each row for each column
+td = tr_body.selectAll("td")
+.data(function (d,i) {return d;});
+
+td.exit().remove();
+td.enter()
+.append("td")
+.text(function (d, i) { return d; });
+
+return _table;
+} // createTable
 
 function getIssueData ($issue = getIssueFields()) {
 return $issue.get().map ((element) => issueFieldAccessor (element) ());
