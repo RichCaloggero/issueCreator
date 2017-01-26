@@ -363,7 +363,7 @@ function createIssueList (issues, fieldNames) {
 
 function createIssueTable (issues, fieldNames) {
 return $(createTable (
-issues.map((r, i) => [i+1].concat(r)),
+issues.map((r, i) => Object.assign ({}, r, {ID: i+1})),
 ["ID"].concat (fieldNames)
 ));
 } // createIssueTable
@@ -394,7 +394,7 @@ tr_body = tr_body.enter()
 
 // create a cell in each row for each column
 td = tr_body.selectAll("td")
-.data(function (d,i) {return d;});
+.data(function (d,i) {return columnTitles.map ((t) => d[t]);});
 
 td.exit().remove();
 td.enter()
