@@ -15,18 +15,22 @@
 <div id="display">
 </div>
 
+<div id="debug" aria-live="polite">
+</div>
 
+<script src="../import/jquery.min.js"></script>
 <script src="../import/d3.min.js"></script>
+<script src="debug.js"></script>
 <script>
 var columnTitles = ["a", "b", "c", "d"];
 var data = [
-[1,2,3,4],
-[5,6,7,8],
-[9,10,11,12]
+{d:4, c:3, b:2, a:1},
+{d:8, c:7, b:6, a:5},
+{d:12, c:11, b:10, a:9}
 ];
 
 createTable ("#display",
-data.map((r, i) => [i+1].concat(r)),
+data.map((r, i) => {r.ID = i+1; return r;}),
 ["ID"].concat (columnTitles)
 );
 
@@ -55,12 +59,15 @@ tr_body = tr_body.enter()
 
 // create a cell in each row for each column
 td = tr_body.selectAll("td")
-.data(function (d,i) {return d;});
+.data(function (d,i) {
+debug ("update: ", i, d);
+return columnTitles.map ((t) => d[t]);
+});
 
 td.exit().remove();
 td.enter()
 .append("td")
-.text(function (d, i) { return d; });
+.text(function (d, i) { debug ("enter: ", i, columnTitles[i], d); return d;});
 
 return table;
 } // createTable
