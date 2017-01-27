@@ -23,7 +23,7 @@ createKeyboardHelp ()
 .appendTo ("body");
 
 $("#keyboardHelp").on ("focusout", function (e) {
-debug ("focusout...");
+//debug ("focusout...");
 $(e.target).focus();
 return false;
 });
@@ -249,7 +249,7 @@ $("#project .file .selector").data("type", "readAsDataURL").trigger ("click");
 })
 
 .on ("loaded", ".create .wcag-browser", function () {
-$("#issues .create [data-name='guideline-fullText']").html ("");
+$("#issues .create [data-name='guideline_fullText']").html ("");
 })
 
 .on ("shown.bs.collapse", ".create .wcag-browser", function (e) {
@@ -313,6 +313,7 @@ $full.html (data.html);
 // helpers
 
 function updateIssue (index = -1) {
+if (typeof(index) === "undefined") index = -1;
 var invalid = checkValidity(getIssueFields().filter ("input"));
 
 if (invalid.length > 0) {
@@ -336,7 +337,9 @@ createIssueDisplay (issues, $("#issues .display .type").val())
 generateIssueSelector (issues, project.currentIssue);
 } // generateIssueDisplay
 
-function createIssueDisplay (issues, type) {
+function createIssueDisplay (_issues, type) {
+issues = _issues.map ((issue) => transformObject(issue));
+//debug ("transformed issues: ", issues);
 if (type === "table") {
 return createIssueTable (issues, project.fieldNames);
 } else if (type === "list") {
@@ -382,7 +385,7 @@ tr_head = tHead.append("tr")
 tr_head.exit().remove();
 tr_head.enter()
 .append("th")
-.text(function (title) { return title;});
+.html(function (title) { return title;});
 
 // create a row for each object in the data
 tr_body = tBody.selectAll('tr')
@@ -399,7 +402,7 @@ td = tr_body.selectAll("td")
 td.exit().remove();
 td.enter()
 .append("td")
-.text(function (d, i) { return d; });
+.html(function (d, i) { return d; });
 
 return _table;
 } // createTable
@@ -423,7 +426,7 @@ return $("#issues .create [data-name]");
 function issueFieldAccessor (element, value) {
 var name = getFieldName ($(element));
 var $element = $(element);
-//debug ("issueField: ", name);
+var nodeName = element.nodeName.toLowerCase();
 
 switch (name) {
 //case "screenshot": return _.bind($element.attr, $element, "src");
@@ -473,7 +476,7 @@ return $fields.map ((i, element) => $(element).data ("name").trim()).get();
 } // getFieldNames
 
 function statusMessage (message) {
-setTimeout (() => $("#status").html("").text(message), 100);
+setTimeout (() => $("#status").html("").text(message), 250);
 } // statusMessage
 
 function checkValidity ($fields) {

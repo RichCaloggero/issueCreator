@@ -49,8 +49,11 @@ result += JSON.stringify(values).slice (1,-1) + "\n";
 return result;
 } // toCsv
 
+/// transformation
+
 var transformers = {
 display: {
+_default: escapeHtml,
 codeExample: marked
 }, formData: {
 _default: "val",
@@ -61,8 +64,13 @@ screenshot: "html"
 
 function getFormData ($fields, transformer = transformers.form) {
 return fromPairs(
-$fields.get().map (($field)
-=> [getFieldName($field), $field[method(getFieldName($field), transformer)]])
+$fields.get().map (function ($field) {
+var name = getFieldName($field);
+return [
+name,
+$field[method(name, transformer)]
+]; // return
+}) // map
 ); // fromPairs
 } // getFormData
 
@@ -75,17 +83,22 @@ $field[method(name, transformer)] (object[name]);
 } // setFormData
 
 
-function transformObject (object, transformer = transformers.display) {
+function transformObject (object, transformer) {
 var identity = function (x) {return x;};
+transformer = transformer || transformers.display;
+//debug ("transformObject: transformer = ", Object.keys(transformer));
 
 return _.mapValues (object, function (value, key) {
-switch (typeof(transformer[key])) {
-case "undefined": return identity (value);
-case "function": return transform[key] (value);
+var t = transformer[key] || transformer._default || identity;
+if (key === "code-example")
+//debug ("mapValues: ", key, t, t(value));
+
+switch (typeof(t)) {
+case "function": return t(value);
 
 default: alert ("invalid transformer -- should never happen!");
 } // switch
-return false;
+return [];
 }); // mapValues
 } // transformObject
 
@@ -112,5 +125,14 @@ methodName = transformer[key];
 return methodName;
 } // method
 
+function escapeHtml (text) {
+	//debug ("escape:", text);
+	text = text.replace (/\&/g, "\&amp;");
+text = text.replace (/\</g, "\&lt;");
+text = text.replace (/\>/g, "\&gt;");
+
+//debug ("- returns:", text);
+return text;
+} // escapeHtml
 
 //alert ("utilities.js loaded");
