@@ -215,7 +215,10 @@ updateAppTitle (project.name);
 generateIssueDisplay (project.issues);
 
 if (data.displayStatus) statusMessage (`${project.issues.length} issues${message}.`);
-if (data.focusOnSelector) setTimeout (() => $("#issues .selector").focus (), 100);
+if (data.focusOnSelector) {
+setTimeout (function () {
+$("#issues .selector").focus ();
+//}, 100);
 } // projectUpdated
 
 function updateAppTitle (name) {
