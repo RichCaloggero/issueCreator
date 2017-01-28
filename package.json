@@ -2,6 +2,11 @@
 "name": "issueCreator",
 "main": "issueCreator.html",
 "babel": {
+"plugins": [
+"transform-class-properties",
+"transform-object-rest-spread",
+"transform-runtime"
+],
 "presets": ["latest"]
 },
 "scripts": {

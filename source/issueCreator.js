@@ -142,7 +142,7 @@ durty: false
 });
 
 
-if (localStorage) {
+/*if (localStorage) {
 if (clearLocalStorage) {
 localStorage.project = null;
 } else if (localStorage.project) {
@@ -154,7 +154,9 @@ message = "loaded from local storage";
 } else {
 alert ("Local storage not available, so save often!");
 } // if
+*/
 
+project.issueData = createIssueFormProcessor ();
 update (project, {
 message: message || "Ready.",
 focusOnSelector: (project.issues.length > 0),
@@ -313,9 +315,9 @@ $full.html (data.html);
 // helpers
 
 function updateIssue (index = -1) {
-if (typeof(index) === "undefined") index = -1;
-var invalid = checkValidity(getIssueFields().filter ("input"));
+var invalid = checkValidity(getIssueFields());
 
+//if (! index && index !== 0)index = -1;
 if (invalid.length > 0) {
 statusMessage ("Invalid issue; please correct and resubmit.");
 invalid[0].focus ();
@@ -323,7 +325,9 @@ return false;
 } // if
 
 if (index < 0) index = project.issues.length;
-project.issues[index] = _.zipObject (project.fieldNames, getIssueData ());
+//debug ("index: ", index);
+project.issues[index] = getIssueData();
+//debug ("issues: ", project.issues.toSource());
 project.durty = true;
 project.currentIssue = index;
 update (project);
@@ -331,6 +335,7 @@ update (project);
 
 
 function generateIssueDisplay (issues) {
+if (! issues || issues.length === 0) return;
 $("#issues .display table, #issues .display ol").remove ();
 createIssueDisplay (issues, $("#issues .display .type").val())
 .appendTo ("#issues .display");
@@ -407,36 +412,28 @@ td.enter()
 return _table;
 } // createTable
 
-function getIssueData ($issue = getIssueFields()) {
-return $issue.get().map ((element) => issueFieldAccessor (element) ());
+function getIssueData () {
+var data = {};
+//debug ("getting data");
+Object.keys(project.issueData).forEach ((key) => data[key] = project.issueData[key]);
+//debug ("data: ", data.toSource());
+return data;
 } // getIssueData
 
-function setIssueData (data, $issue = getIssueFields()) {
-return $issue.get().forEach (function (element, index) {
-var name = getFieldName ($(element));
-var value = (data instanceof Array)? data[index] : data[name];
-issueFieldAccessor (element) (value);
-}); // forEach
+function setIssueData (data) {
+if (data) {
+for (var key in project.issueData) project.issueData[key] = data[key];
+} // if
 } // setIssueData
 
 function getIssueFields () {
 return $("#issues .create [data-name]");
 } // getIssueFields
 
-function issueFieldAccessor (element, value) {
-var name = getFieldName ($(element));
-var $element = $(element);
-var nodeName = element.nodeName.toLowerCase();
+function createIssueFormProcessor () {
+return buildFormProcessor ($("#issues .create"), transformers.formData);
+} // createIssueFormProcessor
 
-switch (name) {
-//case "screenshot": return _.bind($element.attr, $element, "src");
-
-case "screenshot" || "guideline-fullText": return _.bind($element.html, $element);
-
-default: return _.bind($element.val, $element);
-} // switch
-
-} // issueFieldAccessor
 
 function generateIssueSelector (issues) {
 $("#issues .selector").empty()
@@ -446,10 +443,12 @@ $("#issues .selector").val (project.currentIssue);
 
 function createOptions (issues) {
 var $options = $('<option value="-1">[none]</option>');
+if (issues && issues.length > 0) {
 getIssueField ("title", issues)
 .forEach (function (text, index) {
 $options = $options.add (`<option value=${index}>${text}</option>`);
 }); // forEach
+} // if
 
 return $options;
 } // createIssueSelector
